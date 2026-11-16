@@ -1,0 +1,2731 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SILABFIS — Sistem Informasi Laboratorium Fisika | Pendidikan Fisika UNSIL</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- QRCode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            unsil: {
+              navy: '#0f172a',
+              deep: '#172554',
+              blue: '#1d4ed8',
+              accent: '#2563eb',
+              gold: '#f59e0b'
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+    /* Print QR Labels Styling */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #print-qr-area, #print-qr-area * {
+        visibility: visible;
+      }
+      #print-qr-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: white !important;
+        padding: 12px;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased selection:bg-blue-700 selection:text-white">
+
+  <!-- ==================== CUSTOM MODAL DIALOG (NO ALERT/CONFIRM) ==================== -->
+  <div id="custom-dialog" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 transform transition-all">
+      <div id="dialog-header" class="px-6 py-4 bg-gradient-to-r from-slate-900 via-blue-950 to-blue-800 text-white flex items-center gap-3">
+        <div id="dialog-icon" class="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-circle-info"></i>
+        </div>
+        <h3 id="dialog-title" class="font-bold text-base tracking-tight">Informasi Sistem</h3>
+      </div>
+      <div class="p-6">
+        <p id="dialog-message" class="text-sm text-slate-600 leading-relaxed"></p>
+      </div>
+      <div id="dialog-actions" class="px-6 py-3.5 bg-slate-50 border-t border-slate-100 flex justify-end gap-2.5">
+        <button id="dialog-cancel-btn" class="hidden px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-200 transition">
+          Batal
+        </button>
+        <button id="dialog-confirm-btn" class="px-5 py-2 rounded-xl text-xs font-semibold bg-blue-700 hover:bg-blue-800 text-white shadow-sm transition">
+          Mengerti
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TOAST NOTIFICATION ==================== -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-[90] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- ==================== VIEW 1: LOGIN & REGISTRASI PORTAL ==================== -->
+  <section id="auth-view" class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+    <!-- Decorative Background Orbs -->
+    <div class="absolute -top-24 -left-24 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-5xl w-full bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden grid grid-cols-1 lg:grid-cols-12 relative z-10">
+      
+      <!-- Left Branding Column -->
+      <div class="lg:col-span-5 bg-gradient-to-b from-slate-900 via-blue-950 to-blue-900 text-white p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#60a5fa 1px, transparent 1px); background-size: 20px 20px;"></div>
+        
+        <div class="relative z-10">
+          <div class="inline-flex items-center gap-3 px-3.5 py-2 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md mb-6">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-500 to-cyan-400 flex items-center justify-center text-slate-950 font-extrabold text-lg shadow">
+              <i class="fa-solid fa-atom"></i>
+            </div>
+            <div>
+              <span class="block text-xs font-bold tracking-wider uppercase text-blue-300">FKIP — UNSIL</span>
+              <span class="block text-[11px] text-slate-300">Pendidikan Fisika</span>
+            </div>
+          </div>
+
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight mb-3">
+            SILABFIS <span class="text-blue-400">2.5</span>
+          </h1>
+          <p class="text-sm text-blue-100/80 leading-relaxed mb-6">
+            Sistem Informasi Laboratorium Fisika Terpadu Universitas Siliwangi. Manajemen 64+ instrumen praktikum, sirkulasi peminjaman, pelabelan QR Code, kalibrasi, dan audit kepatuhan ISO 15489-1.
+          </p>
+
+          <!-- Status Banner Registrasi Publik -->
+          <div id="auth-reg-status-pill" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-medium mb-6">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="auth-reg-status-text">Pendaftaran Akun Baru: Dibuka</span>
+          </div>
+        </div>
+
+        <!-- Quick Demo Login Cards -->
+        <div class="relative z-10 pt-6 border-t border-white/10">
+          <p class="text-[11px] uppercase tracking-wider font-semibold text-blue-300 mb-3 flex items-center gap-1.5">
+            <i class="fa-solid fa-bolt text-amber-400"></i> Akses Cepat Akun Demo (Sandi: 123)
+          </p>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" onclick="quickFillDemo('laboran', '123')" class="p-2.5 rounded-xl bg-white/10 hover:bg-blue-600/40 border border-white/15 text-left transition group">
+              <div class="flex items-center justify-between mb-1">
+                <i class="fa-solid fa-user-shield text-amber-400 text-xs"></i>
+                <span class="text-[10px] text-blue-200 group-hover:text-white">Admin</span>
+              </div>
+              <div class="text-xs font-bold text-white truncate">laboran</div>
+              <div class="text-[10px] text-slate-300 truncate">Kepala Lab</div>
+            </button>
+            <button type="button" onclick="quickFillDemo('dosen', '123')" class="p-2.5 rounded-xl bg-white/10 hover:bg-blue-600/40 border border-white/15 text-left transition group">
+              <div class="flex items-center justify-between mb-1">
+                <i class="fa-solid fa-chalkboard-user text-cyan-300 text-xs"></i>
+                <span class="text-[10px] text-blue-200 group-hover:text-white">Staf</span>
+              </div>
+              <div class="text-xs font-bold text-white truncate">dosen</div>
+              <div class="text-[10px] text-slate-300 truncate">Dosen Fisika</div>
+            </button>
+            <button type="button" onclick="quickFillDemo('mahasiswa', '123')" class="p-2.5 rounded-xl bg-white/10 hover:bg-blue-600/40 border border-white/15 text-left transition group">
+              <div class="flex items-center justify-between mb-1">
+                <i class="fa-solid fa-graduation-cap text-emerald-300 text-xs"></i>
+                <span class="text-[10px] text-blue-200 group-hover:text-white">User</span>
+              </div>
+              <div class="text-xs font-bold text-white truncate">mahasiswa</div>
+              <div class="text-[10px] text-slate-300 truncate">Praktikan</div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Auth Forms Column -->
+      <div class="lg:col-span-7 p-8 sm:p-10 flex flex-col justify-center bg-white">
+        <!-- Auth Mode Switcher -->
+        <div class="flex p-1 bg-slate-100 rounded-2xl mb-6 border border-slate-200">
+          <button type="button" id="tab-btn-login" onclick="switchAuthTab('login')" class="flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-blue-800 text-white shadow-sm transition">
+            <i class="fa-solid fa-right-to-bracket mr-1.5"></i> Masuk ke SILABFIS
+          </button>
+          <button type="button" id="tab-btn-register" onclick="switchAuthTab('register')" class="flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl text-slate-600 hover:text-slate-900 transition">
+            <i class="fa-solid fa-user-plus mr-1.5"></i> Registrasi Akun Baru
+          </button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Selamat Datang Kembali</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Masukkan kredensial akun SILABFIS Universitas Siliwangi Anda.</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Username atau NIM / NIDN</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                <i class="fa-solid fa-user text-xs"></i>
+              </span>
+              <input type="text" id="login-username" required placeholder="Contoh: laboran, dosen, atau 212153001"
+                class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 focus:border-blue-700 outline-none transition" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Kata Sandi</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                <i class="fa-solid fa-lock text-xs"></i>
+              </span>
+              <input type="password" id="login-password" required placeholder="Masukkan kata sandi"
+                class="w-full pl-10 pr-10 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 focus:border-blue-700 outline-none transition" />
+              <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-eye text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-3 px-4 bg-gradient-to-r from-slate-900 via-blue-900 to-blue-700 hover:from-blue-950 hover:to-blue-800 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-900/20 transition flex items-center justify-center gap-2">
+            <span>Masuk ke Sistem</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </form>
+
+        <!-- REGISTER FORM -->
+        <form id="register-form" onsubmit="handleRegister(event)" class="space-y-3.5 hidden">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Pendaftaran Akun SILABFIS</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Mahasiswa dapat mendaftar langsung; Dosen/Laboran memerlukan Kode Otorisasi Lab.</p>
+          </div>
+
+          <div id="reg-closed-notice" class="hidden p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
+            <i class="fa-solid fa-lock text-rose-600 mt-0.5"></i>
+            <div>
+              <span class="font-bold block">Pendaftaran Publik Sedang Dikunci</span>
+              Kepala Laboratorium sedang menonaktifkan pendaftaran mandiri sementara waktu. Hubungi Laboran Fisika UNSIL untuk pembuatan akun.
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Lengkap & Gelar</label>
+              <input type="text" id="reg-fullname" required placeholder="Nama lengkap Anda"
+                class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">NIM / NIDN / NIP</label>
+              <input type="text" id="reg-idnumber" required placeholder="Nomor induk resmi"
+                class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 outline-none" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Username Login</label>
+              <input type="text" id="reg-username" required placeholder="Tanpa spasi (mis. ahmad_fis)"
+                class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Peran Pengguna</label>
+              <select id="reg-role" onchange="toggleRegAuthCodeField()"
+                class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 outline-none font-medium">
+                <option value="Mahasiswa">Mahasiswa (Praktikan)</option>
+                <option value="Dosen">Dosen Pengampu</option>
+                <option value="Laboran">Laboran / Kepala Lab</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Dynamic Auth Code Field (Hidden for Mahasiswa) -->
+          <div id="reg-authcode-wrapper" class="hidden p-3.5 rounded-xl bg-amber-50/80 border border-amber-200">
+            <label class="block text-xs font-bold text-amber-900 mb-1">
+              <i class="fa-solid fa-key mr-1 text-amber-600"></i> Kode Otorisasi Laboratorium
+            </label>
+            <input type="password" id="reg-authcode" placeholder="Masukkan kode rahasia otorisasi"
+              class="w-full px-3.5 py-2 text-sm bg-white border border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none" />
+            <p class="text-[11px] text-amber-800 mt-1.5 italic">
+              *Minta kode otorisasi resmi kepada Kepala Lab / Laboran.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Kata Sandi Baru</label>
+            <input type="password" id="reg-password" required minlength="3" placeholder="Minimal 3 karakter"
+              class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 outline-none" />
+          </div>
+
+          <button type="submit" id="reg-submit-btn" class="w-full py-2.5 px-4 bg-gradient-to-r from-blue-800 to-blue-600 hover:from-blue-900 hover:to-blue-700 text-white font-bold text-sm rounded-xl shadow-md transition">
+            <i class="fa-solid fa-user-check mr-1.5"></i> Daftarkan Akun Sekarang
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== VIEW 2: MAIN APPLICATION SHELL ==================== -->
+  <div id="app-view" class="hidden min-h-screen flex flex-col">
+    
+    <!-- Top Sticky Navigation Bar -->
+    <header class="sticky top-0 z-40 bg-slate-900 text-white border-b border-blue-900/60 shadow-lg no-print">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        <!-- Brand -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white shadow-inner border border-blue-400/30">
+            <i class="fa-solid fa-atom text-lg"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-extrabold text-base sm:text-lg tracking-tight">SILABFIS</span>
+              <span class="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-blue-800/80 text-blue-200 rounded-md border border-blue-600/40">UNSIL</span>
+            </div>
+            <p class="text-[11px] text-slate-400 hidden sm:block">Laboratorium Pendidikan Fisika FKIP</p>
+          </div>
+        </div>
+
+        <!-- Google Sheets Sync Status Pill -->
+        <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/90 border border-slate-700 text-xs">
+          <span id="gsheet-status-dot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span id="gsheet-status-text" class="text-slate-300 font-medium">Database Sinkron (64 Alat)</span>
+          <button onclick="syncGoogleSheets(true)" title="Sinkronisasi Ulang Google Sheets" class="ml-1 text-blue-400 hover:text-blue-300 transition">
+            <i class="fa-solid fa-rotate"></i>
+          </button>
+        </div>
+
+        <!-- User Profile & Logout -->
+        <div class="flex items-center gap-3">
+          <div class="text-right hidden sm:block">
+            <div id="nav-user-name" class="text-xs font-bold text-white">Nama Pengguna</div>
+            <div class="flex items-center justify-end gap-1.5 mt-0.5">
+              <span id="nav-user-role-badge" class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-500/20 text-amber-300 border border-amber-400/30">Laboran</span>
+            </div>
+          </div>
+          <button onclick="handleLogout()" class="px-3.5 py-2 rounded-xl bg-rose-600/90 hover:bg-rose-600 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span class="hidden sm:inline">Keluar</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Horizontal Module Tabs -->
+      <nav class="bg-blue-950/90 border-t border-blue-900/50 overflow-x-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-1 py-1.5 min-w-max">
+          <button onclick="switchModuleTab('dashboard')" id="nav-tab-dashboard" class="module-tab px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 bg-blue-700 text-white shadow-sm transition">
+            <i class="fa-solid fa-chart-pie"></i> Dashboard & Analitik
+          </button>
+          <button onclick="switchModuleTab('inventaris')" id="nav-tab-inventaris" class="module-tab px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 text-blue-200 hover:bg-white/10 transition">
+            <i class="fa-solid fa-microscope"></i> Inventaris Instrumen
+          </button>
+          <button onclick="switchModuleTab('sirkulasi')" id="nav-tab-sirkulasi" class="module-tab px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 text-blue-200 hover:bg-white/10 transition">
+            <i class="fa-solid fa-hand-holding-hand"></i> Peminjaman & Sirkulasi
+          </button>
+          <button onclick="switchModuleTab('pemeliharaan')" id="nav-tab-pemeliharaan" class="module-tab px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 text-blue-200 hover:bg-white/10 transition">
+            <i class="fa-solid fa-screwdriver-wrench"></i> Kalibrasi & Pemeliharaan
+          </button>
+          <button onclick="switchModuleTab('qrcode')" id="nav-tab-qrcode" class="module-tab px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 text-blue-200 hover:bg-white/10 transition">
+            <i class="fa-solid fa-qrcode"></i> Label QR Code
+          </button>
+          <button onclick="switchModuleTab('audit')" id="nav-tab-audit" class="module-tab px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 text-blue-200 hover:bg-white/10 transition">
+            <i class="fa-solid fa-shield-halved"></i> Audit Trail ISO
+          </button>
+          <button onclick="switchModuleTab('pengaturan')" id="nav-tab-pengaturan" class="module-tab px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 text-blue-200 hover:bg-white/10 transition">
+            <i class="fa-solid fa-sliders"></i> Pengaturan Akun
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+      <!-- ==================== TAB 1: DASHBOARD & ANALITIK ==================== -->
+      <section id="module-dashboard" class="module-section space-y-6">
+        <!-- Hero Banner -->
+        <div class="rounded-3xl bg-gradient-to-r from-slate-900 via-blue-950 to-blue-800 text-white p-6 sm:p-8 shadow-xl relative overflow-hidden">
+          <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-blue-500/15 to-transparent pointer-events-none"></div>
+          <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div>
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-semibold mb-3">
+                <i class="fa-solid fa-building-columns"></i> Program Studi Pendidikan Fisika — FKIP UNSIL
+              </div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                Halo, <span id="hero-user-name" class="text-blue-300">Pengguna</span>!
+              </h1>
+              <p class="text-sm text-blue-100/80 mt-1.5 max-w-2xl">
+                Pantau ketersediaan instrumen praktikum Fisika Dasar, Elektronika, Optik, Gelombang, dan Fisika Modern secara real-time.
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-2.5">
+              <button onclick="switchModuleTab('sirkulasi')" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg transition flex items-center gap-2">
+                <i class="fa-solid fa-plus-circle"></i> Ajukan Peminjaman Alat
+              </button>
+              <button onclick="switchModuleTab('inventaris')" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition flex items-center gap-2">
+                <i class="fa-solid fa-magnifying-glass"></i> Jelajahi 64 Instrumen
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI Metric Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Jenis Instrumen</p>
+              <h3 id="kpi-total-jenis" class="text-2xl font-extrabold text-slate-900 mt-1">64</h3>
+              <p id="kpi-total-unit" class="text-xs text-blue-700 font-medium mt-1">0 Total Unit Fisik</p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-boxes-stacked"></i>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kondisi Baik / Siap</p>
+              <h3 id="kpi-kondisi-baik" class="text-2xl font-extrabold text-emerald-600 mt-1">0</h3>
+              <p class="text-xs text-slate-500 mt-1">Layak digunakan praktikum</p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sedang Dipinjam</p>
+              <h3 id="kpi-dipinjam" class="text-2xl font-extrabold text-amber-600 mt-1">0</h3>
+              <p class="text-xs text-slate-500 mt-1">Transaksi sirkulasi aktif</p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-hand-holding-box"></i>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Perlu Kalibrasi / Rusak</p>
+              <h3 id="kpi-rusak" class="text-2xl font-extrabold text-rose-600 mt-1">0</h3>
+              <p class="text-xs text-slate-500 mt-1">Dalam antrean pemeliharaan</p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-bold text-slate-900 text-base">Distribusi Instrumen per Bidang Kajian Fisika</h3>
+                <p class="text-xs text-slate-500">Jumlah jenis alat berdasarkan kategori praktikum</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-semibold">Live Chart</span>
+            </div>
+            <div class="h-64">
+              <canvas id="categoryChart"></canvas>
+            </div>
+          </div>
+
+          <div class="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-bold text-slate-900 text-base">Status Kelaikan & Kondisi Alat</h3>
+                <p class="text-xs text-slate-500">Proporsi kesiapan operasional laboratorium</p>
+              </div>
+            </div>
+            <div class="h-64 flex items-center justify-center">
+              <canvas id="conditionChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 2: INVENTARIS INSTRUMEN ==================== -->
+      <section id="module-inventaris" class="module-section hidden space-y-5">
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-5 border-b border-slate-100">
+            <div>
+              <h2 class="text-lg font-extrabold text-slate-900">Katalog Inventaris Instrumen Laboratorium</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Terhubung dengan Google Sheet ID <code class="bg-slate-100 px-1.5 py-0.5 rounded text-blue-800">1aZt4_-qtcpjtcUM1rRpEkYCa9CH5kCwDqANmYZLAEJ4</code> (Tab: SILABFIS_DB)</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="syncGoogleSheets(true)" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5">
+                <i class="fa-solid fa-cloud-arrow-down text-blue-700"></i> Muat Ulang Sheet
+              </button>
+              <button id="btn-open-add-item" onclick="openItemModal()" class="px-4 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                <i class="fa-solid fa-plus"></i> Tambah Instrumen Baru
+              </button>
+            </div>
+          </div>
+
+          <!-- Search & Filter Controls -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 my-5">
+            <div class="sm:col-span-2 relative">
+              <i class="fa-solid fa-search absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+              <input type="text" id="inv-search" oninput="renderInventoryTable()" placeholder="Cari kode alat, nama instrumen, merk, atau lokasi lemari..."
+                class="w-full pl-9 pr-4 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 outline-none" />
+            </div>
+            <div>
+              <select id="inv-filter-cat" onchange="renderInventoryTable()" class="w-full px-3.5 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 outline-none">
+                <option value="ALL">Semua Kategori Fisika</option>
+                <option value="Mekanika">Mekanika</option>
+                <option value="Listrik & Magnet">Listrik & Magnet</option>
+                <option value="Gelombang & Optik">Gelombang & Optik</option>
+                <option value="Termodinamika">Termodinamika</option>
+                <option value="Fisika Modern">Fisika Modern</option>
+                <option value="Alat Ukur Dasar">Alat Ukur Dasar</option>
+              </select>
+            </div>
+            <div>
+              <select id="inv-filter-cond" onchange="renderInventoryTable()" class="w-full px-3.5 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 outline-none">
+                <option value="ALL">Semua Kondisi</option>
+                <option value="Baik">Kondisi: Baik</option>
+                <option value="Perlu Kalibrasi">Kondisi: Perlu Kalibrasi</option>
+                <option value="Rusak Ringan">Kondisi: Rusak Ringan</option>
+                <option value="Rusak Berat">Kondisi: Rusak Berat</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Inventory Table -->
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-900 text-white text-[11px] uppercase tracking-wider">
+                  <th class="py-3 px-4 font-bold">Kode Alat</th>
+                  <th class="py-3 px-4 font-bold">Nama Instrumen & Spesifikasi</th>
+                  <th class="py-3 px-4 font-bold">Kategori</th>
+                  <th class="py-3 px-4 font-bold text-center">Stok / Tersedia</th>
+                  <th class="py-3 px-4 font-bold">Lokasi Simpan</th>
+                  <th class="py-3 px-4 font-bold">Kondisi</th>
+                  <th class="py-3 px-4 font-bold text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="inventory-tbody" class="divide-y divide-slate-200 text-xs">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
+          <div class="mt-3 flex items-center justify-between text-xs text-slate-500">
+            <span id="inv-count-label">Menampilkan 0 instrumen</span>
+            <span>Sumber Data: SILABFIS UNSIL</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 3: SIRKULASI PEMINJAMAN ==================== -->
+      <section id="module-sirkulasi" class="module-section hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Form Peminjaman -->
+          <div class="lg:col-span-4 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm h-fit">
+            <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2 mb-1">
+              <i class="fa-solid fa-file-signature text-blue-700"></i> Formulir Peminjaman Alat
+            </h3>
+            <p class="text-xs text-slate-500 mb-4">Ajukan peminjaman instrumen untuk praktikum atau penelitian skripsi.</p>
+
+            <form onsubmit="handleBorrowSubmit(event)" class="space-y-3.5">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Pilih Instrumen Tersedia</label>
+                <select id="borrow-item-select" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 outline-none">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Jumlah Unit</label>
+                  <input type="number" id="borrow-qty" min="1" value="1" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 outline-none" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Tgl Kembali</label>
+                  <input type="date" id="borrow-return-date" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 outline-none" />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Mata Kuliah / Keperluan</label>
+                <input type="text" id="borrow-purpose" required placeholder="Mis. Praktikum Fisika Dasar II / Penelitian"
+                  class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 outline-none" />
+              </div>
+
+              <button type="submit" class="w-full py-2.5 px-4 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs rounded-xl shadow transition">
+                <i class="fa-solid fa-paper-plane mr-1.5"></i> Kirim Pengajuan Peminjaman
+              </button>
+            </form>
+          </div>
+
+          <!-- Daftar Transaksi Sirkulasi -->
+          <div class="lg:col-span-8 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-base font-extrabold text-slate-900">Riwayat & Verifikasi Sirkulasi Peminjaman</h3>
+                <p class="text-xs text-slate-500">Laboran/Dosen dapat menyetujui dan memverifikasi pengembalian alat.</p>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto rounded-xl border border-slate-200">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-900 text-white text-[11px] uppercase">
+                    <th class="py-3 px-3.5">ID / Tanggal</th>
+                    <th class="py-3 px-3.5">Peminjam</th>
+                    <th class="py-3 px-3.5">Instrumen</th>
+                    <th class="py-3 px-3.5 text-center">Jml</th>
+                    <th class="py-3 px-3.5">Status</th>
+                    <th class="py-3 px-3.5 text-right">Verifikasi</th>
+                  </tr>
+                </thead>
+                <tbody id="loans-tbody" class="divide-y divide-slate-200 text-xs">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 4: KALIBRASI & PEMELIHARAAN ==================== -->
+      <section id="module-pemeliharaan" class="module-section hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-4 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm h-fit">
+            <h3 class="text-base font-extrabold text-slate-900 mb-1 flex items-center gap-2">
+              <i class="fa-solid fa-wrench text-blue-700"></i> Catat Log Kalibrasi / Perbaikan
+            </h3>
+            <p class="text-xs text-slate-500 mb-4">Dokumentasi pemeliharaan berkala dan kalibrasi instrumen ukur Fisika.</p>
+
+            <form onsubmit="handleMaintenanceSubmit(event)" class="space-y-3.5">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Pilih Instrumen</label>
+                <select id="maint-item-select" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl outline-none">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Jenis Tindakan</label>
+                <select id="maint-type" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl outline-none">
+                  <option value="Kalibrasi Berkala">Kalibrasi Berkala</option>
+                  <option value="Perbaikan Komponen">Perbaikan Komponen</option>
+                  <option value="Pembersihan Optik/Sensor">Pembersihan Optik / Sensor</option>
+                  <option value="Penggantian Baterai/Sekring">Penggantian Baterai / Sekring</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Status Hasil Tindakan</label>
+                <select id="maint-result-cond" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl outline-none">
+                  <option value="Baik">Selesai — Kembalikan Status Alat ke "Baik"</option>
+                  <option value="Perlu Kalibrasi">Masih Dalam Proses Kalibrasi</option>
+                  <option value="Rusak Ringan">Tandai "Rusak Ringan"</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan Teknis Teknisi / Laboran</label>
+                <textarea id="maint-notes" rows="3" required placeholder="Detail hasil kalibrasi, deviasi pengukuran, atau suku cadang..."
+                  class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl outline-none"></textarea>
+              </div>
+              <button type="submit" class="w-full py-2.5 px-4 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs rounded-xl shadow transition">
+                <i class="fa-solid fa-floppy-disk mr-1.5"></i> Simpan Log Pemeliharaan
+              </button>
+            </form>
+          </div>
+
+          <div class="lg:col-span-8 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+            <h3 class="text-base font-extrabold text-slate-900 mb-4">Riwayat Log Pemeliharaan & Kalibrasi Instrumen</h3>
+            <div class="overflow-x-auto rounded-xl border border-slate-200">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-900 text-white text-[11px] uppercase">
+                    <th class="py-3 px-4">Tanggal</th>
+                    <th class="py-3 px-4">Instrumen</th>
+                    <th class="py-3 px-4">Tindakan</th>
+                    <th class="py-3 px-4">Catatan Teknis</th>
+                    <th class="py-3 px-4">Petugas</th>
+                  </tr>
+                </thead>
+                <tbody id="maintenance-tbody" class="divide-y divide-slate-200 text-xs">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 5: GENERATOR LABEL QR CODE ==================== -->
+      <section id="module-qrcode" class="module-section hidden space-y-6">
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-slate-100 no-print">
+            <div>
+              <h2 class="text-lg font-extrabold text-slate-900">Generator Label QR Code Aset Laboratorium</h2>
+              <p class="text-xs text-slate-500">Cetak stiker identifikasi aset untuk ditempelkan pada lemari dan kotak instrumen Fisika.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <select id="qr-category-select" onchange="renderQRGrid()" class="px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl outline-none font-medium">
+                <option value="ALL">Semua Kategori (16 Sampel Pertama)</option>
+                <option value="Mekanika">Mekanika</option>
+                <option value="Listrik & Magnet">Listrik & Magnet</option>
+                <option value="Gelombang & Optik">Gelombang & Optik</option>
+                <option value="Termodinamika">Termodinamika</option>
+                <option value="Fisika Modern">Fisika Modern</option>
+                <option value="Alat Ukur Dasar">Alat Ukur Dasar</option>
+              </select>
+              <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow flex items-center gap-2">
+                <i class="fa-solid fa-print"></i> Cetak Lembar QR Code
+              </button>
+            </div>
+          </div>
+
+          <div id="print-qr-area" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
+            <!-- QR Cards injected here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 6: AUDIT TRAIL ISO 15489-1 ==================== -->
+      <section id="module-audit" class="module-section hidden space-y-5">
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-slate-100">
+            <div>
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-800 text-[11px] font-bold mb-1">
+                <i class="fa-solid fa-certificate"></i> Standar Kearsipan ISO 15489-1
+              </div>
+              <h2 class="text-lg font-extrabold text-slate-900">Jejak Audit Sistem (Immutable Audit Trail)</h2>
+              <p class="text-xs text-slate-500">Merekam seluruh perubahan inventaris, sirkulasi, perubahan kode otorisasi, dan manajemen akun.</p>
+            </div>
+            <button onclick="exportAuditCSV()" class="px-4 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-sm flex items-center gap-1.5 self-start">
+              <i class="fa-solid fa-file-csv"></i> Ekspor Log Audit (.CSV)
+            </button>
+          </div>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-200 mt-4">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-900 text-white text-[11px] uppercase">
+                  <th class="py-3 px-4">Waktu (WIB)</th>
+                  <th class="py-3 px-4">Aktor / Peran</th>
+                  <th class="py-3 px-4">Modul</th>
+                  <th class="py-3 px-4">Aktivitas & Detail Perubahan</th>
+                </tr>
+              </thead>
+              <tbody id="audit-tbody" class="divide-y divide-slate-200 text-xs">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 7: PENGATURAN AKUN & ADMINISTRATOR ==================== -->
+      <section id="module-pengaturan" class="module-section hidden space-y-6">
+        
+        <!-- 7A. PROFIL PRIBADI & KEAMANAN SANDI (SEMUA PERAN) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-6 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+            <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2 mb-1">
+              <i class="fa-solid fa-id-card text-blue-700"></i> Profil Pengguna Aktif
+            </h3>
+            <p class="text-xs text-slate-500 mb-4">Informasi identitas akun Anda pada sistem SILABFIS UNSIL.</p>
+
+            <form onsubmit="handleUpdateProfile(event)" class="space-y-3.5">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Lengkap & Gelar</label>
+                <input type="text" id="set-fullname" required class="w-full px-3.5 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 outline-none" />
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Username</label>
+                  <input type="text" id="set-username" disabled class="w-full px-3.5 py-2 text-xs sm:text-sm bg-slate-100 text-slate-500 border border-slate-200 rounded-xl cursor-not-allowed" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">NIM / NIDN / NIP</label>
+                  <input type="text" id="set-idnumber" required class="w-full px-3.5 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 outline-none" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Peran Hak Akses Saat Ini</label>
+                <input type="text" id="set-role-display" disabled class="w-full px-3.5 py-2 text-xs sm:text-sm bg-blue-50 text-blue-900 font-bold border border-blue-200 rounded-xl" />
+              </div>
+              <button type="submit" class="px-5 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-sm transition">
+                <i class="fa-solid fa-check mr-1.5"></i> Simpan Perubahan Profil
+              </button>
+            </form>
+          </div>
+
+          <div class="lg:col-span-6 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2 mb-1">
+                <i class="fa-solid fa-key text-blue-700"></i> Keamanan & Ubah Kata Sandi
+              </h3>
+              <p class="text-xs text-slate-500 mb-4">Perbarui kata sandi akun Anda secara berkala untuk menjaga keamanan data.</p>
+
+              <form onsubmit="handleChangePassword(event)" class="space-y-3.5">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Kata Sandi Lama</label>
+                  <input type="password" id="set-old-pass" required placeholder="Masukkan kata sandi saat ini"
+                    class="w-full px-3.5 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 outline-none" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Kata Sandi Baru</label>
+                  <input type="password" id="set-new-pass" required minlength="3" placeholder="Minimal 3 karakter"
+                    class="w-full px-3.5 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 outline-none" />
+                </div>
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-sm transition">
+                  <i class="fa-solid fa-shield-keyhole mr-1.5"></i> Perbarui Kata Sandi
+                </button>
+              </form>
+            </div>
+
+            <!-- Self Role Upgrade Box (Shown ONLY for Mahasiswa/Dosen, hidden for Laboran) -->
+            <div id="self-upgrade-box" class="mt-6 pt-5 border-t border-slate-100">
+              <p class="text-xs font-bold text-slate-800 mb-1">Peningkatan Hak Akses Staf / Dosen</p>
+              <p class="text-[11px] text-slate-500 mb-2.5">Punya kode otorisasi resmi dari Kepala Lab? Tingkatkan akun Anda menjadi Dosen atau Laboran.</p>
+              <form onsubmit="handleSelfUpgradeRole(event)" class="flex flex-col sm:flex-row gap-2">
+                <select id="upgrade-target-role" class="px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl outline-none">
+                  <option value="Dosen">Dosen</option>
+                  <option value="Laboran">Laboran</option>
+                </select>
+                <input type="password" id="upgrade-auth-code" required placeholder="Kode otorisasi lab..."
+                  class="flex-1 px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl outline-none" />
+                <button type="submit" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition">
+                  Verifikasi
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7B. PANEL ADMINISTRATOR KHUSUS LABORAN / KEPALA LAB (STRICT RBAC: HIDDEN FOR MAHASISWA & DOSEN) -->
+        <div id="laboran-admin-panel" class="hidden space-y-6">
+          <!-- Admin Banner Header -->
+          <div class="rounded-2xl bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 text-white p-5 sm:p-6 border border-blue-700/50 shadow-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-start gap-3.5">
+              <div class="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-400/40 text-amber-300 flex items-center justify-center text-xl shrink-0">
+                <i class="fa-solid fa-user-shield"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 rounded bg-amber-500 text-slate-950 text-[10px] font-extrabold uppercase tracking-wider">Otoritas Kepala Lab / Laboran</span>
+                </div>
+                <h3 class="text-lg font-extrabold mt-1">Pusat Kendali Administrator & Keamanan SILABFIS</h3>
+                <p class="text-xs text-blue-200/80 mt-0.5">Kelola kode otorisasi pendaftaran staf, hak akses seluruh akun pengguna, kebijakan registrasi, dan integrasi database.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 1: Pengaturan Kode Otorisasi & Kebijakan Sistem -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Kode Otorisasi Pendaftaran Dosen & Laboran -->
+            <div class="lg:col-span-7 bg-white rounded-2xl p-6 border-2 border-blue-900/15 shadow-sm">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                  <i class="fa-solid fa-key text-amber-600"></i> Kode Otorisasi Pendaftaran (Dosen & Laboran)
+                </h4>
+                <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">Aktif</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                Kode rahasia ini wajib dimasukkan saat pengguna baru mendaftar sebagai <strong>Dosen</strong> atau <strong>Laboran</strong> (Mahasiswa bebas mendaftar tanpa kode).
+              </p>
+
+              <!-- Current Active Code Display -->
+              <div class="p-4 rounded-xl bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                <div>
+                  <span class="text-[10px] uppercase tracking-wider text-blue-300 font-semibold block">Kode Otorisasi Saat Ini</span>
+                  <div class="flex items-center gap-2.5 mt-1">
+                    <code id="admin-current-authcode" class="text-base sm:text-lg font-mono font-extrabold tracking-widest text-amber-400">••••••••••••</code>
+                    <button type="button" onclick="toggleAdminAuthCodeReveal()" class="text-xs text-slate-300 hover:text-white px-2 py-1 rounded bg-white/10">
+                      <i id="admin-reveal-icon" class="fa-solid fa-eye"></i>
+                    </button>
+                  </div>
+                </div>
+                <button type="button" onclick="copyCurrentAuthCode()" class="px-3.5 py-2 rounded-xl bg-blue-700 hover:bg-blue-600 text-white text-xs font-bold transition flex items-center gap-1.5 self-start sm:self-center">
+                  <i class="fa-solid fa-copy"></i> Salin Kode
+                </button>
+              </div>
+
+              <!-- Change Auth Code Form -->
+              <form onsubmit="handleUpdateAuthCode(event)" class="space-y-3">
+                <label class="block text-xs font-bold text-slate-700">Ganti dengan Kode Otorisasi Baru</label>
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <input type="text" id="admin-new-authcode-input" required minlength="4" placeholder="Ketik kode baru (mis. FISIKAUNSIL26)"
+                    class="flex-1 px-3.5 py-2.5 text-xs sm:text-sm font-mono uppercase bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-700 outline-none" />
+                  <button type="button" onclick="generateRandomAuthCode()" class="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold border border-slate-300 transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-dice text-blue-700"></i> Buat Kode Acak
+                  </button>
+                  <button type="submit" class="px-4 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-sm transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-floppy-disk"></i> Simpan Kode Baru
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Kebijakan Operasional & Sinkronisasi Sistem -->
+            <div class="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col justify-between">
+              <div>
+                <h4 class="text-base font-extrabold text-slate-900 flex items-center gap-2 mb-1">
+                  <i class="fa-solid fa-sliders text-blue-700"></i> Kebijakan Operasional Laboratorium
+                </h4>
+                <p class="text-xs text-slate-500 mb-4">Pengaturan akses pendaftaran mandiri dan sinkronisasi cloud.</p>
+
+                <!-- Toggle Registrasi Publik -->
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3 mb-3">
+                  <div>
+                    <div class="text-xs font-bold text-slate-900">Pendaftaran Akun Mandiri</div>
+                    <p id="admin-reg-policy-desc" class="text-[11px] text-slate-500 mt-0.5">Saat ini: Terbuka untuk mahasiswa & staf berkode.</p>
+                  </div>
+                  <button type="button" id="admin-toggle-reg-btn" onclick="togglePublicRegistrationPolicy()"
+                    class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-sm transition shrink-0">
+                    <i class="fa-solid fa-lock-open mr-1"></i> Terbuka
+                  </button>
+                </div>
+
+                <!-- Force Sync Google Sheets -->
+                <div class="p-4 rounded-xl bg-blue-50/70 border border-blue-200 flex items-center justify-between gap-3">
+                  <div>
+                    <div class="text-xs font-bold text-blue-950">Sinkronisasi Google Sheets</div>
+                    <p class="text-[11px] text-blue-800/80 mt-0.5">Tab: <code>SILABFIS_DB</code> (64 Instrumen)</p>
+                  </div>
+                  <button type="button" onclick="syncGoogleSheets(true)"
+                    class="px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-700 hover:bg-blue-800 text-white shadow-sm transition shrink-0">
+                    <i class="fa-solid fa-rotate mr-1"></i> Sinkron Paksa
+                  </button>
+                </div>
+              </div>
+
+              <!-- Reset Demo Data (Strict Laboran Only) -->
+              <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+                <div>
+                  <span class="text-xs font-bold text-rose-700 block">Reset Database Demo</span>
+                  <span class="text-[11px] text-slate-500">Kembalikan 64 alat & transaksi ke awal.</span>
+                </div>
+                <button type="button" onclick="confirmResetDemoData()" class="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-200 text-xs font-bold transition">
+                  <i class="fa-solid fa-rotate-left mr-1"></i> Reset Data Demo ke Awal
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 2: Manajemen Penuh Akun Terdaftar (Khusus Laboran) -->
+          <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-slate-100">
+              <div>
+                <h4 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                  <i class="fa-solid fa-users-gear text-blue-700"></i> Manajemen Seluruh Akun Pengguna SILABFIS
+                </h4>
+                <p class="text-xs text-slate-500 mt-0.5">Ubah peran pengguna, reset kata sandi ke default (<code>123</code>), tambah akun baru secara langsung, atau hapus akun pengguna.</p>
+              </div>
+              <button type="button" onclick="toggleAdminAddUserForm()" class="px-4 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5 self-start">
+                <i class="fa-solid fa-user-plus"></i> Tambah Akun Manual
+              </button>
+            </div>
+
+            <!-- Collapsible Manual Add User Form -->
+            <form id="admin-add-user-form" onsubmit="handleAdminCreateUser(event)" class="hidden my-4 p-4 rounded-2xl bg-blue-50/70 border border-blue-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">Nama Lengkap</label>
+                <input type="text" id="admin-new-fullname" required placeholder="Nama & Gelar" class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl outline-none" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">NIM / NIDN / NIP</label>
+                <input type="text" id="admin-new-idnum" required placeholder="Nomor Induk" class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl outline-none" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">Username</label>
+                <input type="text" id="admin-new-username" required placeholder="username" class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl outline-none" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">Peran</label>
+                <select id="admin-new-role" class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl outline-none font-semibold">
+                  <option value="Mahasiswa">Mahasiswa</option>
+                  <option value="Dosen">Dosen</option>
+                  <option value="Laboran">Laboran</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">Password Awal</label>
+                <input type="text" id="admin-new-pass" required value="123" class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl outline-none" />
+              </div>
+              <div class="flex gap-2">
+                <button type="submit" class="flex-1 py-2 px-3 bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold rounded-xl transition">
+                  Simpan
+                </button>
+                <button type="button" onclick="toggleAdminAddUserForm()" class="py-2 px-3 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition">
+                  Batal
+                </button>
+              </div>
+            </form>
+
+            <!-- Users Table -->
+            <div class="overflow-x-auto rounded-xl border border-slate-200 mt-4">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-900 text-white text-[11px] uppercase tracking-wider">
+                    <th class="py-3 px-4">Nama Lengkap</th>
+                    <th class="py-3 px-4">Username</th>
+                    <th class="py-3 px-4">NIM / NIDN</th>
+                    <th class="py-3 px-4">Peran Hak Akses</th>
+                    <th class="py-3 px-4 text-right">Kontrol Akun</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-users-tbody" class="divide-y divide-slate-200 text-xs">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7C. BACKUP & RESTORE DATABASE (BAGIAN BAWAH PENGATURAN AKUN) -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-database text-blue-700"></i> Pencadangan & Pemulihan Data (Backup & Restore)
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">Ekspor seluruh data inventaris, peminjaman, kalibrasi, dan audit ke format <code>.JSON</code> atau <code>.CSV</code>.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2.5">
+              <button type="button" onclick="exportInventoryCSV()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                <i class="fa-solid fa-file-csv"></i> Ekspor Inventaris (.CSV)
+              </button>
+              <button type="button" onclick="exportFullBackupJSON()" class="px-4 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                <i class="fa-solid fa-download"></i> Unduh Backup Lengkap (.JSON)
+              </button>
+              <label class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-upload"></i> Pulihkan dari (.JSON)
+                <input type="file" accept=".json" onchange="importBackupJSON(event)" class="hidden" />
+              </label>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 text-xs py-5 px-4 border-t border-slate-800 mt-10 no-print">
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+        <p>© 2026 <strong class="text-white">SILABFIS UNSIL</strong> — Laboratorium Pendidikan Fisika, Fakultas Keguruan dan Ilmu Pendidikan, Universitas Siliwangi.</p>
+        <p class="text-[11px] text-slate-500">Kepatuhan Arsip ISO 15489-1 • Google Sheet Sync Ready</p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ==================== MODAL TAMBAH / EDIT INSTRUMEN ==================== -->
+  <div id="item-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
+      <div class="px-6 py-4 bg-gradient-to-r from-slate-900 to-blue-900 text-white flex items-center justify-between">
+        <h3 id="item-modal-title" class="font-bold text-base">Tambah Instrumen Laboratorium</h3>
+        <button onclick="closeItemModal()" class="text-slate-300 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <form onsubmit="handleSaveItem(event)" class="p-6 space-y-3.5 text-xs">
+        <input type="hidden" id="item-edit-id" />
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Kode Inventaris</label>
+            <input type="text" id="item-code" required placeholder="FIS-MEK-065" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl outline-none" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Kategori Fisika</label>
+            <select id="item-category" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl outline-none">
+              <option value="Mekanika">Mekanika</option>
+              <option value="Listrik & Magnet">Listrik & Magnet</option>
+              <option value="Gelombang & Optik">Gelombang & Optik</option>
+              <option value="Termodinamika">Termodinamika</option>
+              <option value="Fisika Modern">Fisika Modern</option>
+              <option value="Alat Ukur Dasar">Alat Ukur Dasar</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Nama Instrumen</label>
+          <input type="text" id="item-name" required placeholder="Nama alat praktikum" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl outline-none" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Merk / Spesifikasi</label>
+            <input type="text" id="item-spec" required placeholder="Pudak / Phywe / Spesifikasi" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl outline-none" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Lokasi Lemari / Rak</label>
+            <input type="text" id="item-location" required placeholder="Lemari A-1" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl outline-none" />
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Total Stok</label>
+            <input type="number" id="item-total" min="1" value="4" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl outline-none" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Unit Tersedia</label>
+            <input type="number" id="item-avail" min="0" value="4" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl outline-none" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Kondisi</label>
+            <select id="item-condition" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl outline-none">
+              <option value="Baik">Baik</option>
+              <option value="Perlu Kalibrasi">Perlu Kalibrasi</option>
+              <option value="Rusak Ringan">Rusak Ringan</option>
+              <option value="Rusak Berat">Rusak Berat</option>
+            </select>
+          </div>
+        </div>
+        <div class="pt-3 flex justify-end gap-2 border-t border-slate-100">
+          <button type="button" onclick="closeItemModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">Batal</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold shadow">Simpan Instrumen</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== JAVASCRIPT APPLICATION LOGIC ==================== -->
+  <script>
+    // ==================== CONSTANTS & STORAGE KEYS ====================
+    const STORAGE_KEYS = {
+      USERS: 'silabfis_users_v2',
+      CURRENT_USER: 'silabfis_current_user_v2',
+      AUTH_CODE: 'simlab_auth_code', // Dynamic authorization code key
+      REG_OPEN: 'silabfis_public_reg_open',
+      INVENTORY: 'silabfis_inventory_v2',
+      LOANS: 'silabfis_loans_v2',
+      MAINTENANCE: 'silabfis_maintenance_v2',
+      AUDIT: 'silabfis_audit_v2'
+    };
+
+    const GSHEET_ID = '1aZt4_-qtcpjtcUM1rRpEkYCa9CH5kCwDqANmYZLAEJ4';
+    const GSHEET_TAB = 'SILABFIS_DB';
+
+    // Default Demo Accounts
+    const DEFAULT_USERS = [
+      { id: 'USR-001', username: 'laboran', password: '123', fullName: 'Drs. H. Hendra Gunawan, M.Pd.', idNumber: '197804122005011002', role: 'Laboran' },
+      { id: 'USR-002', username: 'dosen', password: '123', fullName: 'Dr. Rina Rahmawati, M.Si.', idNumber: '0415088502', role: 'Dosen' },
+      { id: 'USR-003', username: 'mahasiswa', password: '123', fullName: 'Rizky Fauzan Pratama', idNumber: '222153014', role: 'Mahasiswa' }
+    ];
+
+    // Complete 64 Physics Laboratory Instruments (Pendidikan Fisika UNSIL)
+    const INITIAL_64_INSTRUMENTS = [
+      { id: 'INV-01', code: 'FIS-UKR-001', name: 'Jangka Sorong Digital 150mm', category: 'Alat Ukur Dasar', spec: 'Mitutoyo / Ketelitian 0.01 mm', total: 15, available: 14, location: 'Lemari A-1', condition: 'Baik' },
+      { id: 'INV-02', code: 'FIS-UKR-002', name: 'Mikrometer Sekrup 0-25mm', category: 'Alat Ukur Dasar', spec: 'Ketelitian 0.01 mm Ratchet Stop', total: 15, available: 15, location: 'Lemari A-1', condition: 'Baik' },
+      { id: 'INV-03', code: 'FIS-UKR-003', name: 'Neraca Ohaus 311 Gram (4 Lengan)', category: 'Alat Ukur Dasar', spec: 'Ohaus Cent-O-Gram 0.01 g', total: 10, available: 9, location: 'Lemari A-2', condition: 'Baik' },
+      { id: 'INV-04', code: 'FIS-UKR-004', name: 'Neraca Digital Analitik 500g', category: 'Alat Ukur Dasar', spec: 'Ketelitian 0.001 g + Windshield', total: 6, available: 6, location: 'Lemari A-2', condition: 'Baik' },
+      { id: 'INV-05', code: 'FIS-UKR-005', name: 'Stopwatch Digital Presisi', category: 'Alat Ukur Dasar', spec: 'Casio HS-80TW 1/1000 detik', total: 20, available: 18, location: 'Lemari A-3', condition: 'Baik' },
+      { id: 'INV-06', code: 'FIS-UKR-006', name: 'Dinamometer Pegas 5N & 10N', category: 'Alat Ukur Dasar', spec: 'Pudak Scientific Tabung Transparan', total: 18, available: 18, location: 'Lemari A-3', condition: 'Baik' },
+      { id: 'INV-07', code: 'FIS-UKR-007', name: 'Spherometer Presisi', category: 'Alat Ukur Dasar', spec: 'Skala 0.01 mm Tripod Kuningan', total: 8, available: 8, location: 'Lemari A-1', condition: 'Baik' },
+      { id: 'INV-08', code: 'FIS-UKR-008', name: 'Barometer Aneroid & Higrometer', category: 'Alat Ukur Dasar', spec: 'Dinding Lab 960-1060 hPa', total: 4, available: 4, location: 'Dinding Lab Utama', condition: 'Baik' },
+      { id: 'INV-09', code: 'FIS-MEK-009', name: 'Rel Udara (Air Track) & Blower Set', category: 'Mekanika', spec: 'Panjang 2.0 m + Glider + Photogate', total: 6, available: 5, location: 'Rak B-1', condition: 'Baik' },
+      { id: 'INV-10', code: 'FIS-MEK-010', name: 'Ticker Timer (Pewaktu Ketik) AC', category: 'Mekanika', spec: '50 Hz + Pita Kertas Karbon', total: 12, available: 11, location: 'Lemari B-2', condition: 'Baik' },
+      { id: 'INV-11', code: 'FIS-MEK-011', name: 'Set Kereta Dinamika & Rel Presisi', category: 'Mekanika', spec: 'Aluminium 1.2 m + Beban Bercelah', total: 10, available: 10, location: 'Rak B-1', condition: 'Baik' },
+      { id: 'INV-12', code: 'FIS-MEK-012', name: 'Pesawat Atwood Lengkap', category: 'Mekanika', spec: 'Tiang 1.5 m + Katrol Gesekan Rendah', total: 6, available: 6, location: 'Rak B-2', condition: 'Baik' },
+      { id: 'INV-13', code: 'FIS-MEK-013', name: 'Alat Percobaan Jatuh Bebas Digital', category: 'Mekanika', spec: 'Sensor Magnetik + Timer Mikrodetik', total: 5, available: 5, location: 'Lemari B-3', condition: 'Baik' },
+      { id: 'INV-14', code: 'FIS-MEK-014', name: 'Bandul Matematis & Bandul Fisis', category: 'Mekanika', spec: 'Statif Berat + Bola Logam 3 Variasi', total: 10, available: 10, location: 'Lemari B-3', condition: 'Baik' },
+      { id: 'INV-15', code: 'FIS-MEK-015', name: 'Alat Momen Inersia & Giroskop', category: 'Mekanika', spec: 'Cakram Aluminium + Sensor Rotasi', total: 4, available: 4, location: 'Lemari B-4', condition: 'Baik' },
+      { id: 'INV-16', code: 'FIS-MEK-016', name: 'Meja Gaya (Force Table) 360 Derajat', category: 'Mekanika', spec: '4 Katrol + Set Beban Kuningan', total: 8, available: 8, location: 'Lemari B-4', condition: 'Baik' },
+      { id: 'INV-17', code: 'FIS-MEK-017', name: 'Alat Sentripetal Mekanik & Digital', category: 'Mekanika', spec: 'Motor Variabel + Tachometer', total: 5, available: 4, location: 'Lemari B-5', condition: 'Perlu Kalibrasi' },
+      { id: 'INV-18', code: 'FIS-MEK-018', name: 'Tabung Viskositas Stokes & Bola Baja', category: 'Mekanika', spec: 'Kaca Borosilikat 100 cm + Magnet', total: 8, available: 8, location: 'Rak B-3', condition: 'Baik' },
+      { id: 'INV-19', code: 'FIS-MEK-019', name: 'Alat Modulus Young (Lenturan Batang)', category: 'Mekanika', spec: 'Dial Indicator 0.01 mm + Batang Uji', total: 5, available: 5, location: 'Lemari B-5', condition: 'Baik' },
+      { id: 'INV-20', code: 'FIS-MEK-020', name: 'Alat Hukum Hooke & Konstanta Pegas', category: 'Mekanika', spec: '5 Variasi Konstanta Pegas + Mistar', total: 12, available: 12, location: 'Lemari B-2', condition: 'Baik' },
+      { id: 'INV-21', code: 'FIS-MEK-021', name: 'Alat Tumbukan 2 Dimensi (Peluncur)', category: 'Mekanika', spec: 'Rel Lengkung + Bola Baja & Kaca', total: 6, available: 6, location: 'Lemari B-4', condition: 'Baik' },
+      { id: 'INV-22', code: 'FIS-MEK-022', name: 'Hidrometer & Tabung Massa Jenis', category: 'Mekanika', spec: 'Rentang 0.700 - 2.000 g/cm3', total: 10, available: 10, location: 'Lemari B-5', condition: 'Baik' },
+      { id: 'INV-23', code: 'FIS-LSM-023', name: 'Osiloskop Digital 2 Channel 100 MHz', category: 'Listrik & Magnet', spec: 'Rigol DS1102Z-E + 2 Probe', total: 8, available: 7, location: 'Lemari C-1', condition: 'Baik' },
+      { id: 'INV-24', code: 'FIS-LSM-024', name: 'Function Generator DDS 25 MHz', category: 'Listrik & Magnet', spec: 'Gelombang Sinus, Kotak, Segitiga', total: 8, available: 8, location: 'Lemari C-1', condition: 'Baik' },
+      { id: 'INV-25', code: 'FIS-LSM-025', name: 'Catu Daya DC Variabel 0-30V / 5A', category: 'Listrik & Magnet', spec: 'Digital Dual Display Constant Current', total: 14, available: 13, location: 'Lemari C-2', condition: 'Baik' },
+      { id: 'INV-26', code: 'FIS-LSM-026', name: 'Multimeter Digital True RMS', category: 'Listrik & Magnet', spec: 'Sanwa CD800a / Fluke 101', total: 20, available: 19, location: 'Lemari C-2', condition: 'Baik' },
+      { id: 'INV-27', code: 'FIS-LSM-027', name: 'Multimeter Analog Jarum', category: 'Listrik & Magnet', spec: 'Sanwa YX-360TRF', total: 15, available: 14, location: 'Lemari C-2', condition: 'Baik' },
+      { id: 'INV-28', code: 'FIS-LSM-028', name: 'Jembatan Wheatstone & Bangku Hambatan', category: 'Listrik & Magnet', spec: 'Kawat Konstantan 1 m + Galvanometer', total: 8, available: 8, location: 'Lemari C-3', condition: 'Baik' },
+      { id: 'INV-29', code: 'FIS-LSM-029', name: 'Galvanometer Nol Tengah Sensitif', category: 'Listrik & Magnet', spec: 'Skala -500 hingga +500 Mikroampere', total: 10, available: 10, location: 'Lemari C-3', condition: 'Baik' },
+      { id: 'INV-30', code: 'FIS-LSM-030', name: 'Kotak Dekade Hambatan (Decade Box)', category: 'Listrik & Magnet', spec: '1 Ohm hingga 100 kOhm Presisi 1%', total: 10, available: 10, location: 'Lemari C-3', condition: 'Baik' },
+      { id: 'INV-31', code: 'FIS-LSM-031', name: 'Kit Rangkaian Listrik AC/DC & RLC', category: 'Listrik & Magnet', spec: 'Papan Plug-in + Induktor + Kapasitor', total: 10, available: 10, location: 'Lemari C-4', condition: 'Baik' },
+      { id: 'INV-32', code: 'FIS-LSM-032', name: 'Kumparan Helmholtz & Medan Magnet', category: 'Listrik & Magnet', spec: 'Sepasang Kumparan 200 Lilitan + Kompas', total: 5, available: 5, location: 'Lemari C-4', condition: 'Baik' },
+      { id: 'INV-33', code: 'FIS-LSM-033', name: 'Teslameter / Gaussmeter Digital', category: 'Listrik & Magnet', spec: 'Probe Hall Effect Aksial & Transversal', total: 4, available: 3, location: 'Lemari C-4', condition: 'Perlu Kalibrasi' },
+      { id: 'INV-34', code: 'FIS-LSM-034', name: 'Generator Van de Graaff Elektrostatik', category: 'Listrik & Magnet', spec: 'Kubah 22 cm + Bola Pelepasan Muatan', total: 2, available: 2, location: 'Lemari C-5', condition: 'Baik' },
+      { id: 'INV-35', code: 'FIS-LSM-035', name: 'Transformator Demontrasi (Inti U-I)', category: 'Listrik & Magnet', spec: 'Kumparan 200, 400, 800, 1600 Lilitan', total: 6, available: 6, location: 'Lemari C-5', condition: 'Baik' },
+      { id: 'INV-36', code: 'FIS-LSM-036', name: 'Solder Station & Toolkit Elektronika', category: 'Listrik & Magnet', spec: 'Kontrol Suhu 200-480°C + Penyedot Timah', total: 8, available: 8, location: 'Lemari C-5', condition: 'Baik' },
+      { id: 'INV-37', code: 'FIS-OPT-037', name: 'Bangku Optik Presisi 1.5 Meter', category: 'Gelombang & Optik', spec: 'Rel Aluminium + 4 Rider + Layar', total: 10, available: 10, location: 'Lemari D-1', condition: 'Baik' },
+      { id: 'INV-38', code: 'FIS-OPT-038', name: 'Laser He-Ne Merah 632.8 nm', category: 'Gelombang & Optik', spec: 'Daya 2 mW + Dudukan Penjepit Optik', total: 6, available: 6, location: 'Lemari D-1', condition: 'Baik' },
+      { id: 'INV-39', code: 'FIS-OPT-039', name: 'Laser Dioda Hijau & Merah Modul', category: 'Gelombang & Optik', spec: '532 nm & 650 nm dengan Adaptor', total: 10, available: 9, location: 'Lemari D-1', condition: 'Baik' },
+      { id: 'INV-40', code: 'FIS-OPT-040', name: 'Kisi Difraksi Presisi (100, 300, 600 l/mm)', category: 'Gelombang & Optik', spec: 'Frame Kaca Optik Terkalibrasi', total: 12, available: 12, location: 'Lemari D-2', condition: 'Baik' },
+      { id: 'INV-41', code: 'FIS-OPT-041', name: 'Set Lensa Cembung, Cekung & Prisma', category: 'Gelombang & Optik', spec: 'Kaca Crown & Flint Fokus +50 hingga +200mm', total: 12, available: 12, location: 'Lemari D-2', condition: 'Baik' },
+      { id: 'INV-42', code: 'FIS-OPT-042', name: 'Spektrometer Prisma Goniometer', category: 'Gelombang & Optik', spec: 'Skala Vernier 1 Menit Busur + Kolimator', total: 4, available: 4, location: 'Lemari D-2', condition: 'Baik' },
+      { id: 'INV-43', code: 'FIS-OPT-043', name: 'Interferometer Michelson Presisi', category: 'Gelombang & Optik', spec: 'Mikrometer Penggerak Cermin 0.001 mm', total: 2, available: 2, location: 'Lemari D-3', condition: 'Baik' },
+      { id: 'INV-44', code: 'FIS-OPT-044', name: 'Polarimeter & Set Filter Polaroid', category: 'Gelombang & Optik', spec: 'Skala Sudut 360° + Tabung Larutan', total: 5, available: 5, location: 'Lemari D-3', condition: 'Baik' },
+      { id: 'INV-45', code: 'FIS-OPT-045', name: 'Tangki Riak (Ripple Tank) LED Strobo', category: 'Gelombang & Optik', spec: 'Pembangkit Gelombang Digital + Aksesoris', total: 4, available: 3, location: 'Rak D-4', condition: 'Rusak Ringan' },
+      { id: 'INV-46', code: 'FIS-OPT-046', name: 'Alat Percobaan Melde (Gelombang Tali)', category: 'Gelombang & Optik', spec: 'Vibrator Frekuensi Variabel + Katrol', total: 8, available: 8, location: 'Lemari D-4', condition: 'Baik' },
+      { id: 'INV-47', code: 'FIS-OPT-047', name: 'Tabung Resonansi Gelombang Bunyi', category: 'Gelombang & Optik', spec: 'Kolom Udara + Reservoir Air + Garpu Tala', total: 8, available: 8, location: 'Rak D-4', condition: 'Baik' },
+      { id: 'INV-48', code: 'FIS-OPT-048', name: 'Sound Level Meter Digital', category: 'Gelombang & Optik', spec: 'Rentang 30 - 130 dB Akurasi ±1.5 dB', total: 6, available: 6, location: 'Lemari D-3', condition: 'Baik' },
+      { id: 'INV-49', code: 'FIS-TRM-049', name: 'Kalorimeter Listrik Digital & Pengaduk', category: 'Termodinamika', spec: 'Elemen Pemanas 12V + Isolator Ganda', total: 10, available: 10, location: 'Lemari E-1', condition: 'Baik' },
+      { id: 'INV-50', code: 'FIS-TRM-050', name: 'Alat Muai Panjang Logam (Dilatometer)', category: 'Termodinamika', spec: 'Batang Tembaga, Aluminium, Baja + Dial', total: 6, available: 6, location: 'Lemari E-1', condition: 'Baik' },
+      { id: 'INV-51', code: 'FIS-TRM-051', name: 'Termometer Inframerah & Termokopel', category: 'Termodinamika', spec: 'Rentang -50°C hingga +550°C', total: 10, available: 10, location: 'Lemari E-1', condition: 'Baik' },
+      { id: 'INV-52', code: 'FIS-TRM-052', name: 'Alat Hukum Boyle-Gay Lussac', category: 'Termodinamika', spec: 'Manometer Presisi + Silinder Skala Volume', total: 6, available: 6, location: 'Lemari E-2', condition: 'Baik' },
+      { id: 'INV-53', code: 'FIS-TRM-053', name: 'Alat Konduktivitas Termal Logam', category: 'Termodinamika', spec: 'Steam Generator + Sensor Suhu 4 Titik', total: 4, available: 4, location: 'Lemari E-2', condition: 'Baik' },
+      { id: 'INV-54', code: 'FIS-TRM-054', name: 'Kubus Radiasi Leslie & Sensor Termal', category: 'Termodinamika', spec: '4 Permukaan (Hitam, Putih, Kusam, Kilap)', total: 4, available: 4, location: 'Lemari E-2', condition: 'Baik' },
+      { id: 'INV-55', code: 'FIS-TRM-055', name: 'Mesin Kalor Stirling (Model Demonstrasi)', category: 'Termodinamika', spec: 'Silinder Kaca + Pembakar Spiritus', total: 3, available: 3, location: 'Lemari E-3', condition: 'Baik' },
+      { id: 'INV-56', code: 'FIS-MOD-056', name: 'Aparatus Efek Fotolistrik (Konstanta Planck)', category: 'Fisika Modern', spec: 'Tabung Vakum Fotodioda + 5 Filter Panjang Gelombang', total: 3, available: 3, location: 'Lemari F-1', condition: 'Baik' },
+      { id: 'INV-57', code: 'FIS-MOD-057', name: 'Tabung e/m (Rasio Muatan-Massa Elektron)', category: 'Fisika Modern', spec: 'Tabung Sinar Katoda + Kumparan Helmholtz', total: 2, available: 2, location: 'Lemari F-1', condition: 'Baik' },
+      { id: 'INV-58', code: 'FIS-MOD-058', name: 'Aparatus Percobaan Franck-Hertz', category: 'Fisika Modern', spec: 'Tabung Argon/Neon + Unit Kontrol Tegangan', total: 2, available: 2, location: 'Lemari F-1', condition: 'Baik' },
+      { id: 'INV-59', code: 'FIS-MOD-059', name: 'Detektor Radiasi Geiger-Muller Counter', category: 'Fisika Modern', spec: 'Tabung GM + Absorber Timbal & Aluminium', total: 3, available: 3, location: 'Lemari F-2', condition: 'Baik' },
+      { id: 'INV-60', code: 'FIS-MOD-060', name: 'Tabung Spektrum Gas (H, He, Ne, Hg)', category: 'Fisika Modern', spec: 'Catu Daya Tegangan Tinggi 5 kV + 4 Tabung', total: 4, available: 4, location: 'Lemari F-2', condition: 'Baik' },
+      { id: 'INV-61', code: 'FIS-MOD-061', name: 'Aparatus Difraksi Elektron (Cincin Grafit)', category: 'Fisika Modern', spec: 'Tabung Vakum + HV Power Supply 5 kV', total: 2, available: 2, location: 'Lemari F-2', condition: 'Baik' },
+      { id: 'INV-62', code: 'FIS-MOD-062', name: 'Kit Karakteristik Sel Surya & Efek Hall', category: 'Fisika Modern', spec: 'Panel Monokristalin + Luxmeter Digital', total: 5, available: 5, location: 'Lemari F-3', condition: 'Baik' },
+      { id: 'INV-63', code: 'FIS-MOD-063', name: 'Sensor Data Logger Fisika Nirkabel', category: 'Fisika Modern', spec: 'Sensor Gaya, Gerak, Suhu, Tegangan Bluetooth', total: 6, available: 6, location: 'Lemari F-3', condition: 'Baik' },
+      { id: 'INV-64', code: 'FIS-MOD-064', name: 'Aparatus Interferometer Gelombang Mikro', category: 'Fisika Modern', spec: 'Pemancar Gunn 10.5 GHz + Penerima Goniometer', total: 2, available: 2, location: 'Lemari F-3', condition: 'Baik' }
+    ];
+
+    // Global State
+    let users = [];
+    let currentUser = null;
+    let inventory = [];
+    let loans = [];
+    let maintenanceLogs = [];
+    let auditLogs = [];
+    let categoryChartInstance = null;
+    let conditionChartInstance = null;
+    let isAdminAuthCodeVisible = false;
+
+    // ==================== INITIALIZATION ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      initDataStore();
+      checkExistingSession();
+      updateAuthRegPolicyUI();
+    });
+
+    function initDataStore() {
+      // 1. Authorization Code (Default: LABFISIKA2026)
+      if (!localStorage.getItem(STORAGE_KEYS.AUTH_CODE)) {
+        localStorage.setItem(STORAGE_KEYS.AUTH_CODE, 'LABFISIKA2026');
+      }
+
+      // 2. Public Registration Policy (Default: true / Open)
+      if (localStorage.getItem(STORAGE_KEYS.REG_OPEN) === null) {
+        localStorage.setItem(STORAGE_KEYS.REG_OPEN, 'true');
+      }
+
+      // 3. Users
+      const savedUsers = localStorage.getItem(STORAGE_KEYS.USERS);
+      if (savedUsers) {
+        users = JSON.parse(savedUsers);
+      } else {
+        users = JSON.parse(JSON.stringify(DEFAULT_USERS));
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+      }
+
+      // 4. Inventory (64 items)
+      const savedInv = localStorage.getItem(STORAGE_KEYS.INVENTORY);
+      if (savedInv) {
+        inventory = JSON.parse(savedInv);
+      } else {
+        inventory = JSON.parse(JSON.stringify(INITIAL_64_INSTRUMENTS));
+        localStorage.setItem(STORAGE_KEYS.INVENTORY, JSON.stringify(inventory));
+      }
+
+      // 5. Loans
+      const savedLoans = localStorage.getItem(STORAGE_KEYS.LOANS);
+      if (savedLoans) {
+        loans = JSON.parse(savedLoans);
+      } else {
+        loans = [
+          {
+            id: 'PJM-2026-001',
+            date: '2026-11-15',
+            returnDate: '2026-11-18',
+            borrowerName: 'Rizky Fauzan Pratama',
+            borrowerUsername: 'mahasiswa',
+            itemId: 'INV-01',
+            itemCode: 'FIS-UKR-001',
+            itemName: 'Jangka Sorong Digital 150mm',
+            qty: 1,
+            purpose: 'Praktikum Fisika Dasar I - Pengukuran Dasar',
+            status: 'Dipinjam'
+          },
+          {
+            id: 'PJM-2026-002',
+            date: '2026-11-16',
+            returnDate: '2026-11-20',
+            borrowerName: 'Dr. Rina Rahmawati, M.Si.',
+            borrowerUsername: 'dosen',
+            itemId: 'INV-23',
+            itemCode: 'FIS-LSM-023',
+            itemName: 'Osiloskop Digital 2 Channel 100 MHz',
+            qty: 1,
+            purpose: 'Penelitian Karakterisasi Rangkaian RLC',
+            status: 'Menunggu Persetujuan'
+          }
+        ];
+        localStorage.setItem(STORAGE_KEYS.LOANS, JSON.stringify(loans));
+      }
+
+      // 6. Maintenance Logs
+      const savedMaint = localStorage.getItem(STORAGE_KEYS.MAINTENANCE);
+      if (savedMaint) {
+        maintenanceLogs = JSON.parse(savedMaint);
+      } else {
+        maintenanceLogs = [
+          {
+            id: 'MNT-001',
+            date: '2026-11-10',
+            itemCode: 'FIS-OPT-045',
+            itemName: 'Tangki Riak (Ripple Tank) LED Strobo',
+            type: 'Perbaikan Komponen',
+            notes: 'Motor penggetar memerlukan penggantian karet kopling.',
+            actor: 'Drs. H. Hendra Gunawan, M.Pd.'
+          },
+          {
+            id: 'MNT-002',
+            date: '2026-11-12',
+            itemCode: 'FIS-LSM-033',
+            itemName: 'Teslameter / Gaussmeter Digital',
+            type: 'Kalibrasi Berkala',
+            notes: 'Kalibrasi zero-gauss chamber dijadwalkan ulang.',
+            actor: 'Drs. H. Hendra Gunawan, M.Pd.'
+          }
+        ];
+        localStorage.setItem(STORAGE_KEYS.MAINTENANCE, JSON.stringify(maintenanceLogs));
+      }
+
+      // 7. Audit Logs
+      const savedAudit = localStorage.getItem(STORAGE_KEYS.AUDIT);
+      if (savedAudit) {
+        auditLogs = JSON.parse(savedAudit);
+      } else {
+        auditLogs = [
+          {
+            timestamp: '16/11/2026 08:00:00 WIB',
+            actor: 'Sistem SILABFIS (System)',
+            module: 'Inisialisasi',
+            detail: 'Database 64 instrumen Pendidikan Fisika UNSIL dimuat dan disinkronkan.'
+          }
+        ];
+        localStorage.setItem(STORAGE_KEYS.AUDIT, JSON.stringify(auditLogs));
+      }
+    }
+
+    function saveAllStorage() {
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+      localStorage.setItem(STORAGE_KEYS.INVENTORY, JSON.stringify(inventory));
+      localStorage.setItem(STORAGE_KEYS.LOANS, JSON.stringify(loans));
+      localStorage.setItem(STORAGE_KEYS.MAINTENANCE, JSON.stringify(maintenanceLogs));
+      localStorage.setItem(STORAGE_KEYS.AUDIT, JSON.stringify(auditLogs));
+    }
+
+    function getActiveAuthCode() {
+      return localStorage.getItem(STORAGE_KEYS.AUTH_CODE) || 'LABFISIKA2026';
+    }
+
+    function isPublicRegistrationOpen() {
+      return localStorage.getItem(STORAGE_KEYS.REG_OPEN) !== 'false';
+    }
+
+    function logAudit(moduleName, detailText) {
+      const now = new Date();
+      const formattedTime = now.toLocaleString('id-ID', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      }) + ' WIB';
+
+      const actorLabel = currentUser
+        ? `${currentUser.fullName} (${currentUser.role})`
+        : 'Pengguna Publik / Tamu';
+
+      auditLogs.unshift({
+        timestamp: formattedTime,
+        actor: actorLabel,
+        module: moduleName,
+        detail: detailText
+      });
+
+      localStorage.setItem(STORAGE_KEYS.AUDIT, JSON.stringify(auditLogs));
+      renderAuditTable();
+    }
+
+    // ==================== CUSTOM DIALOG & TOAST ====================
+    function showDialog({ title = 'Informasi', message = '', type = 'info', confirmText = 'Mengerti', cancelText = null, onConfirm = null }) {
+      const modal = document.getElementById('custom-dialog');
+      const header = document.getElementById('dialog-header');
+      const icon = document.getElementById('dialog-icon');
+      const titleEl = document.getElementById('dialog-title');
+      const msgEl = document.getElementById('dialog-message');
+      const confirmBtn = document.getElementById('dialog-confirm-btn');
+      const cancelBtn = document.getElementById('dialog-cancel-btn');
+
+      titleEl.textContent = title;
+      msgEl.innerHTML = message;
+      confirmBtn.textContent = confirmText;
+
+      if (type === 'danger') {
+        header.className = 'px-6 py-4 bg-gradient-to-r from-rose-900 to-rose-700 text-white flex items-center gap-3';
+        icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+        confirmBtn.className = 'px-5 py-2 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white shadow-sm transition';
+      } else if (type === 'warning') {
+        header.className = 'px-6 py-4 bg-gradient-to-r from-amber-800 to-amber-600 text-white flex items-center gap-3';
+        icon.innerHTML = '<i class="fa-solid fa-shield-halved"></i>';
+        confirmBtn.className = 'px-5 py-2 rounded-xl text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition';
+      } else {
+        header.className = 'px-6 py-4 bg-gradient-to-r from-slate-900 via-blue-950 to-blue-800 text-white flex items-center gap-3';
+        icon.innerHTML = '<i class="fa-solid fa-circle-info"></i>';
+        confirmBtn.className = 'px-5 py-2 rounded-xl text-xs font-semibold bg-blue-700 hover:bg-blue-800 text-white shadow-sm transition';
+      }
+
+      if (cancelText) {
+        cancelBtn.textContent = cancelText;
+        cancelBtn.classList.remove('hidden');
+      } else {
+        cancelBtn.classList.add('hidden');
+      }
+
+      const closeModal = () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      };
+
+      cancelBtn.onclick = closeModal;
+      confirmBtn.onclick = () => {
+        closeModal();
+        if (typeof onConfirm === 'function') onConfirm();
+      };
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const colors = {
+        success: 'bg-slate-900 border-emerald-500 text-white',
+        error: 'bg-rose-950 border-rose-500 text-white',
+        info: 'bg-blue-950 border-blue-400 text-white'
+      };
+      const icons = {
+        success: '<i class="fa-solid fa-circle-check text-emerald-400"></i>',
+        error: '<i class="fa-solid fa-circle-xmark text-rose-400"></i>',
+        info: '<i class="fa-solid fa-circle-info text-blue-400"></i>'
+      };
+
+      toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl border-l-4 shadow-xl text-xs font-medium transition-all transform translate-y-0 ${colors[type] || colors.info}`;
+      toast.innerHTML = `${icons[type] || icons.info}<span class="flex-1">${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3400);
+    }
+
+    // ==================== AUTHENTICATION & REGISTRATION ====================
+    function switchAuthTab(mode) {
+      const loginForm = document.getElementById('login-form');
+      const regForm = document.getElementById('register-form');
+      const btnLogin = document.getElementById('tab-btn-login');
+      const btnReg = document.getElementById('tab-btn-register');
+
+      if (mode === 'login') {
+        loginForm.classList.remove('hidden');
+        regForm.classList.add('hidden');
+        btnLogin.className = 'flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-blue-800 text-white shadow-sm transition';
+        btnReg.className = 'flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl text-slate-600 hover:text-slate-900 transition';
+      } else {
+        loginForm.classList.add('hidden');
+        regForm.classList.remove('hidden');
+        btnReg.className = 'flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-blue-800 text-white shadow-sm transition';
+        btnLogin.className = 'flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl text-slate-600 hover:text-slate-900 transition';
+        updateAuthRegPolicyUI();
+      }
+    }
+
+    function updateAuthRegPolicyUI() {
+      const isOpen = isPublicRegistrationOpen();
+      const pill = document.getElementById('auth-reg-status-pill');
+      const pillText = document.getElementById('auth-reg-status-text');
+      const closedNotice = document.getElementById('reg-closed-notice');
+      const submitBtn = document.getElementById('reg-submit-btn');
+
+      if (isOpen) {
+        pill.className = 'inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-medium mb-6';
+        pillText.textContent = 'Pendaftaran Akun Baru: Dibuka';
+        closedNotice.classList.add('hidden');
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      } else {
+        pill.className = 'inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-500/20 border border-rose-400/30 text-rose-200 text-xs font-medium mb-6';
+        pillText.textContent = 'Pendaftaran Akun Baru: Dikunci Kepala Lab';
+        closedNotice.classList.remove('hidden');
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+    }
+
+    function toggleRegAuthCodeField() {
+      const role = document.getElementById('reg-role').value;
+      const wrapper = document.getElementById('reg-authcode-wrapper');
+      const input = document.getElementById('reg-authcode');
+      if (role === 'Mahasiswa') {
+        wrapper.classList.add('hidden');
+        input.required = false;
+        input.value = '';
+      } else {
+        wrapper.classList.remove('hidden');
+        input.required = true;
+      }
+    }
+
+    function quickFillDemo(username, password) {
+      switchAuthTab('login');
+      document.getElementById('login-username').value = username;
+      document.getElementById('login-password').value = password;
+      showToast(`Kredensial demo "${username}" diisikan. Klik Masuk ke Sistem.`, 'info');
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+      const inp = document.getElementById(inputId);
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        btn.innerHTML = '<i class="fa-solid fa-eye-slash text-xs"></i>';
+      } else {
+        inp.type = 'password';
+        btn.innerHTML = '<i class="fa-solid fa-eye text-xs"></i>';
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const uname = document.getElementById('login-username').value.trim().toLowerCase();
+      const pass = document.getElementById('login-password').value;
+
+      const found = users.find(
+        u => (u.username.toLowerCase() === uname || u.idNumber.toLowerCase() === uname) && u.password === pass
+      );
+
+      if (!found) {
+        showDialog({
+          title: 'Autentikasi Gagal',
+          message: 'Username/NIM atau kata sandi tidak cocok dengan data yang terdaftar di SILABFIS.',
+          type: 'danger'
+        });
+        return;
+      }
+
+      currentUser = found;
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+      logAudit('Autentikasi', `Login berhasil ke sistem SILABFIS sebagai ${currentUser.role}.`);
+      enterApplication();
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+
+      if (!isPublicRegistrationOpen()) {
+        showDialog({
+          title: 'Pendaftaran Dikunci',
+          message: 'Pendaftaran akun mandiri sedang dinonaktifkan oleh Kepala Lab / Laboran.',
+          type: 'warning'
+        });
+        return;
+      }
+
+      const fullName = document.getElementById('reg-fullname').value.trim();
+      const idNumber = document.getElementById('reg-idnumber').value.trim();
+      const username = document.getElementById('reg-username').value.trim().toLowerCase();
+      const role = document.getElementById('reg-role').value;
+      const password = document.getElementById('reg-password').value;
+      const authCodeInput = document.getElementById('reg-authcode').value.trim();
+
+      if (users.some(u => u.username.toLowerCase() === username)) {
+        showDialog({
+          title: 'Username Sudah Digunakan',
+          message: `Username <strong>${username}</strong> sudah terdaftar. Silakan gunakan username lain.`,
+          type: 'warning'
+        });
+        return;
+      }
+
+      // Dynamic Authorization Code Validation for Dosen & Laboran
+      if (role === 'Dosen' || role === 'Laboran') {
+        const activeCode = getActiveAuthCode();
+        if (authCodeInput !== activeCode) {
+          showDialog({
+            title: 'Kode Otorisasi Tidak Valid',
+            message: 'Kode otorisasi laboratorium yang Anda masukkan salah. Hubungi Kepala Lab / Laboran untuk memperoleh kode aktif.',
+            type: 'danger'
+          });
+          return;
+        }
+      }
+
+      const newUser = {
+        id: 'USR-' + Date.now().toString().slice(-5),
+        username,
+        password,
+        fullName,
+        idNumber,
+        role
+      };
+
+      users.push(newUser);
+      saveAllStorage();
+
+      currentUser = newUser;
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+      logAudit('Registrasi Akun', `Akun baru terdaftar: ${fullName} (${username}) dengan peran ${role}.`);
+
+      showToast(`Selamat datang, ${fullName}! Akun ${role} berhasil dibuat.`, 'success');
+      enterApplication();
+    }
+
+    function checkExistingSession() {
+      const savedSession = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+      if (savedSession) {
+        const parsed = JSON.parse(savedSession);
+        // Verify user still exists in users array (in case Laboran deleted the account)
+        const freshUser = users.find(u => u.id === parsed.id);
+        if (freshUser) {
+          currentUser = freshUser;
+          enterApplication();
+          return;
+        } else {
+          localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+        }
+      }
+    }
+
+    function handleLogout() {
+      if (currentUser) {
+        logAudit('Autentikasi', `Pengguna ${currentUser.fullName} keluar (logout) dari sistem.`);
+      }
+      currentUser = null;
+      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+      document.getElementById('app-view').classList.add('hidden');
+      document.getElementById('auth-view').classList.remove('hidden');
+      updateAuthRegPolicyUI();
+      showToast('Anda telah keluar dari SILABFIS.', 'info');
+    }
+
+    // ==================== ENTER APP & STRICT RBAC ENFORCEMENT ====================
+    function enterApplication() {
+      document.getElementById('auth-view').classList.add('hidden');
+      document.getElementById('app-view').classList.remove('hidden');
+
+      // Update Header & Hero User Info
+      document.getElementById('nav-user-name').textContent = currentUser.fullName;
+      document.getElementById('hero-user-name').textContent = currentUser.fullName;
+
+      const roleBadge = document.getElementById('nav-user-role-badge');
+      roleBadge.textContent = currentUser.role;
+      if (currentUser.role === 'Laboran') {
+        roleBadge.className = 'px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-500/20 text-amber-300 border border-amber-400/40';
+      } else if (currentUser.role === 'Dosen') {
+        roleBadge.className = 'px-2 py-0.5 text-[10px] font-bold rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-400/40';
+      } else {
+        roleBadge.className = 'px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-400/40';
+      }
+
+      // STRICT RBAC: Enforce visibility of Laboran Administrator Panel & Controls
+      enforceRoleBasedUI();
+
+      // Populate Profile Settings
+      populateSettingsView();
+
+      // Render All Modules
+      refreshAllViews();
+      switchModuleTab('dashboard');
+    }
+
+    function enforceRoleBasedUI() {
+      const isLaboran = currentUser && currentUser.role === 'Laboran';
+      const isStaff = currentUser && (currentUser.role === 'Laboran' || currentUser.role === 'Dosen');
+
+      // 1. Strict RBAC on #laboran-admin-panel in Settings Tab
+      const adminPanel = document.getElementById('laboran-admin-panel');
+      const selfUpgradeBox = document.getElementById('self-upgrade-box');
+
+      if (isLaboran) {
+        adminPanel.classList.remove('hidden');
+        selfUpgradeBox.classList.add('hidden'); // Laboran already has highest privilege
+      } else {
+        // Completely hide from Mahasiswa and Dosen
+        adminPanel.classList.add('hidden');
+        selfUpgradeBox.classList.remove('hidden');
+      }
+
+      // 2. Inventory Add Item Button (Laboran & Dosen only)
+      const btnAddItem = document.getElementById('btn-open-add-item');
+      if (isStaff) {
+        btnAddItem.classList.remove('hidden');
+      } else {
+        btnAddItem.classList.add('hidden');
+      }
+    }
+
+    function switchModuleTab(tabName) {
+      // Hide all module sections
+      document.querySelectorAll('.module-section').forEach(sec => sec.classList.add('hidden'));
+      // Reset tab styles
+      document.querySelectorAll('.module-tab').forEach(btn => {
+        btn.className = 'module-tab px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 text-blue-200 hover:bg-white/10 transition';
+      });
+
+      // Show active section & style tab
+      document.getElementById(`module-${tabName}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`nav-tab-${tabName}`);
+      if (activeBtn) {
+        activeBtn.className = 'module-tab px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 bg-blue-700 text-white shadow-sm transition';
+      }
+
+      if (tabName === 'dashboard') {
+        renderCharts();
+      } else if (tabName === 'qrcode') {
+        renderQRGrid();
+      } else if (tabName === 'pengaturan') {
+        enforceRoleBasedUI();
+        populateSettingsView();
+      }
+    }
+
+    function refreshAllViews() {
+      updateDashboardKPIs();
+      renderCharts();
+      renderInventoryTable();
+      populateItemDropdowns();
+      renderLoansTable();
+      renderMaintenanceTable();
+      renderAuditTable();
+      if (currentUser && currentUser.role === 'Laboran') {
+        renderAdminUsersTable();
+        updateAdminPolicyUI();
+      }
+    }
+
+    // ==================== GOOGLE SHEETS SYNC ====================
+    async function syncGoogleSheets(manualTrigger = false) {
+      const dot = document.getElementById('gsheet-status-dot');
+      const txt = document.getElementById('gsheet-status-text');
+      dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-ping';
+      txt.textContent = 'Menyinkronkan Sheet...';
+
+      const url = `https://docs.google.com/spreadsheets/d/${GSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(GSHEET_TAB)}`;
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const text = await response.text();
+        const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+        const data = JSON.parse(jsonStr);
+
+        if (data && data.table && data.table.rows && data.table.rows.length > 0) {
+          const parsedRows = data.table.rows.map((r, idx) => {
+            const c = r.c || [];
+            return {
+              id: `INV-GS-${idx + 1}`,
+              code: c[0]?.v || `FIS-GS-${idx + 1}`,
+              name: c[1]?.v || 'Instrumen Fisika',
+              category: c[2]?.v || 'Alat Ukur Dasar',
+              spec: c[3]?.v || '-',
+              total: Number(c[4]?.v) || 1,
+              available: Number(c[5]?.v ?? c[4]?.v) || 1,
+              location: c[6]?.v || 'Lemari Utama',
+              condition: c[7]?.v || 'Baik'
+            };
+          }).filter(item => item.code && item.code !== 'Kode Alat');
+
+          if (parsedRows.length > 0) {
+            inventory = parsedRows;
+            saveAllStorage();
+            refreshAllViews();
+          }
+        }
+
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+        txt.textContent = `Google Sheet Terhubung (${inventory.length} Alat)`;
+        if (manualTrigger) {
+          logAudit('Sinkronisasi Cloud', `Sinkronisasi manual dengan Google Sheet ID ${GSHEET_ID} (Tab: ${GSHEET_TAB}) berhasil.`);
+          showToast('Sinkronisasi Google Sheet SILABFIS_DB berhasil!', 'success');
+        }
+      } catch (err) {
+        // Fallback gracefully to local 64 UNSIL instruments
+        dot.className = 'w-2 h-2 rounded-full bg-blue-400';
+        txt.textContent = `Mode Offline Lokal (${inventory.length} Alat)`;
+        if (manualTrigger) {
+          logAudit('Sinkronisasi Cloud', 'Sinkronisasi menggunakan cache lokal 64 instrumen (akses publik sheet terbatas/offline).');
+          showToast(`Menggunakan database lokal terverifikasi (${inventory.length} instrumen).`, 'info');
+        }
+      }
+    }
+
+    // ==================== DASHBOARD & CHARTS ====================
+    function updateDashboardKPIs() {
+      const totalJenis = inventory.length;
+      const totalUnit = inventory.reduce((sum, item) => sum + Number(item.total || 0), 0);
+      const totalAvail = inventory.reduce((sum, item) => sum + Number(item.available || 0), 0);
+      const baikCount = inventory.filter(i => i.condition === 'Baik').length;
+      const rusakKalibrasiCount = inventory.filter(i => i.condition !== 'Baik').length;
+      const activeLoansCount = loans.filter(l => l.status === 'Dipinjam' || l.status === 'Menunggu Persetujuan').length;
+
+      document.getElementById('kpi-total-jenis').textContent = totalJenis;
+      document.getElementById('kpi-total-unit').textContent = `${totalUnit} Unit Fisik (${totalAvail} Tersedia)`;
+      document.getElementById('kpi-kondisi-baik').textContent = `${baikCount} Jenis`;
+      document.getElementById('kpi-dipinjam').textContent = `${activeLoansCount} Transaksi`;
+      document.getElementById('kpi-rusak').textContent = `${rusakKalibrasiCount} Jenis`;
+    }
+
+    function renderCharts() {
+      const catCtx = document.getElementById('categoryChart');
+      const condCtx = document.getElementById('conditionChart');
+      if (!catCtx || !condCtx) return;
+
+      const categories = ['Mekanika', 'Listrik & Magnet', 'Gelombang & Optik', 'Termodinamika', 'Fisika Modern', 'Alat Ukur Dasar'];
+      const catCounts = categories.map(cat => inventory.filter(i => i.category === cat).length);
+
+      if (categoryChartInstance) categoryChartInstance.destroy();
+      categoryChartInstance = new Chart(catCtx, {
+        type: 'bar',
+        data: {
+          labels: categories,
+          datasets: [{
+            label: 'Jumlah Jenis Instrumen',
+            data: catCounts,
+            backgroundColor: ['#1e3a8a', '#1d4ed8', '#2563eb', '#0284c7', '#4f46e5', '#0f172a'],
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 2, font: { size: 11 } } },
+            x: { ticks: { font: { size: 10 } } }
+          }
+        }
+      });
+
+      const condLabels = ['Baik', 'Perlu Kalibrasi', 'Rusak Ringan', 'Rusak Berat'];
+      const condCounts = condLabels.map(c => inventory.filter(i => i.condition === c).length);
+
+      if (conditionChartInstance) conditionChartInstance.destroy();
+      conditionChartInstance = new Chart(condCtx, {
+        type: 'doughnut',
+        data: {
+          labels: condLabels,
+          datasets: [{
+            data: condCounts,
+            backgroundColor: ['#10b981', '#f59e0b', '#f97316', '#ef4444'],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 14 } }
+          },
+          cutout: '65%'
+        }
+      });
+    }
+
+    // ==================== INVENTORY CRUD ====================
+    function renderInventoryTable() {
+      const tbody = document.getElementById('inventory-tbody');
+      const search = document.getElementById('inv-search').value.toLowerCase();
+      const catFilter = document.getElementById('inv-filter-cat').value;
+      const condFilter = document.getElementById('inv-filter-cond').value;
+      const isStaff = currentUser && (currentUser.role === 'Laboran' || currentUser.role === 'Dosen');
+
+      const filtered = inventory.filter(item => {
+        const matchText =
+          item.code.toLowerCase().includes(search) ||
+          item.name.toLowerCase().includes(search) ||
+          item.spec.toLowerCase().includes(search) ||
+          item.location.toLowerCase().includes(search);
+        const matchCat = catFilter === 'ALL' || item.category === catFilter;
+        const matchCond = condFilter === 'ALL' || item.condition === condFilter;
+        return matchText && matchCat && matchCond;
+      });
+
+      document.getElementById('inv-count-label').textContent = `Menampilkan ${filtered.length} dari ${inventory.length} instrumen`;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">Tidak ada instrumen yang sesuai kriteria pencarian.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        let badgeClass = 'bg-emerald-100 text-emerald-800';
+        if (item.condition === 'Perlu Kalibrasi') badgeClass = 'bg-amber-100 text-amber-800';
+        else if (item.condition === 'Rusak Ringan') badgeClass = 'bg-orange-100 text-orange-800';
+        else if (item.condition === 'Rusak Berat') badgeClass = 'bg-rose-100 text-rose-800';
+
+        return `
+          <tr class="hover:bg-blue-50/40 transition">
+            <td class="py-3 px-4 font-mono font-bold text-blue-900 whitespace-nowrap">${item.code}</td>
+            <td class="py-3 px-4">
+              <div class="font-bold text-slate-900">${item.name}</div>
+              <div class="text-[11px] text-slate-500">${item.spec}</div>
+            </td>
+            <td class="py-3 px-4 whitespace-nowrap">
+              <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-medium text-[11px]">${item.category}</span>
+            </td>
+            <td class="py-3 px-4 text-center whitespace-nowrap">
+              <span class="font-extrabold text-slate-900">${item.available}</span>
+              <span class="text-slate-400">/ ${item.total}</span>
+            </td>
+            <td class="py-3 px-4 text-slate-600 whitespace-nowrap">${item.location}</td>
+            <td class="py-3 px-4 whitespace-nowrap">
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold ${badgeClass}">${item.condition}</span>
+            </td>
+            <td class="py-3 px-4 text-right whitespace-nowrap">
+              ${isStaff ? `
+                <button onclick="openItemModal('${item.id}')" title="Edit Alat" class="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 mr-1 transition">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                ${currentUser.role === 'Laboran' ? `
+                  <button onclick="deleteInventoryItem('${item.id}')" title="Hapus Alat" class="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                ` : ''}
+              ` : `<span class="text-[11px] text-slate-400 italic">Lihat Saja</span>`}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openItemModal(itemId = null) {
+      const modal = document.getElementById('item-modal');
+      const title = document.getElementById('item-modal-title');
+      document.getElementById('item-edit-id').value = itemId || '';
+
+      if (itemId) {
+        const item = inventory.find(i => i.id === itemId);
+        if (!item) return;
+        title.textContent = 'Edit Data Instrumen Laboratorium';
+        document.getElementById('item-code').value = item.code;
+        document.getElementById('item-category').value = item.category;
+        document.getElementById('item-name').value = item.name;
+        document.getElementById('item-spec').value = item.spec;
+        document.getElementById('item-location').value = item.location;
+        document.getElementById('item-total').value = item.total;
+        document.getElementById('item-avail').value = item.available;
+        document.getElementById('item-condition').value = item.condition;
+      } else {
+        title.textContent = 'Tambah Instrumen Baru';
+        document.getElementById('item-code').value = `FIS-NEW-0${inventory.length + 1}`;
+        document.getElementById('item-category').value = 'Mekanika';
+        document.getElementById('item-name').value = '';
+        document.getElementById('item-spec').value = '';
+        document.getElementById('item-location').value = 'Lemari A-1';
+        document.getElementById('item-total').value = 4;
+        document.getElementById('item-avail').value = 4;
+        document.getElementById('item-condition').value = 'Baik';
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeItemModal() {
+      const modal = document.getElementById('item-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function handleSaveItem(e) {
+      e.preventDefault();
+      const editId = document.getElementById('item-edit-id').value;
+      const code = document.getElementById('item-code').value.trim();
+      const category = document.getElementById('item-category').value;
+      const name = document.getElementById('item-name').value.trim();
+      const spec = document.getElementById('item-spec').value.trim();
+      const location = document.getElementById('item-location').value.trim();
+      const total = parseInt(document.getElementById('item-total').value, 10);
+      const available = Math.min(total, parseInt(document.getElementById('item-avail').value, 10));
+      const condition = document.getElementById('item-condition').value;
+
+      if (editId) {
+        const idx = inventory.findIndex(i => i.id === editId);
+        if (idx !== -1) {
+          inventory[idx] = { ...inventory[idx], code, category, name, spec, location, total, available, condition };
+          logAudit('Inventaris', `Memperbarui data instrumen ${code} (${name}).`);
+          showToast('Data instrumen berhasil diperbarui.', 'success');
+        }
+      } else {
+        const newItem = {
+          id: 'INV-' + Date.now().toString().slice(-5),
+          code, category, name, spec, location, total, available, condition
+        };
+        inventory.unshift(newItem);
+        logAudit('Inventaris', `Menambahkan instrumen baru: ${code} — ${name} (${total} unit).`);
+        showToast('Instrumen baru berhasil ditambahkan ke katalog.', 'success');
+      }
+
+      saveAllStorage();
+      closeItemModal();
+      refreshAllViews();
+    }
+
+    function deleteInventoryItem(itemId) {
+      const item = inventory.find(i => i.id === itemId);
+      if (!item) return;
+
+      showDialog({
+        title: 'Hapus Instrumen dari Katalog?',
+        message: `Anda yakin ingin menghapus <strong>${item.code} — ${item.name}</strong> dari inventaris laboratorium?`,
+        type: 'danger',
+        confirmText: 'Ya, Hapus Alat',
+        cancelText: 'Batal',
+        onConfirm: () => {
+          inventory = inventory.filter(i => i.id !== itemId);
+          saveAllStorage();
+          logAudit('Inventaris', `Menghapus instrumen ${item.code} (${item.name}) dari database.`);
+          refreshAllViews();
+          showToast('Instrumen telah dihapus.', 'info');
+        }
+      });
+    }
+
+    // ==================== LOANS & CIRCULATION ====================
+    function populateItemDropdowns() {
+      const borrowSel = document.getElementById('borrow-item-select');
+      const maintSel = document.getElementById('maint-item-select');
+
+      const availItems = inventory.filter(i => i.available > 0 && i.condition !== 'Rusak Berat');
+      borrowSel.innerHTML = availItems.map(i =>
+        `<option value="${i.id}">[${i.code}] ${i.name} (Tersedia: ${i.available})</option>`
+      ).join('');
+
+      maintSel.innerHTML = inventory.map(i =>
+        `<option value="${i.id}">[${i.code}] ${i.name} (${i.condition})</option>`
+      ).join('');
+    }
+
+    function handleBorrowSubmit(e) {
+      e.preventDefault();
+      const itemId = document.getElementById('borrow-item-select').value;
+      const qty = parseInt(document.getElementById('borrow-qty').value, 10);
+      const returnDate = document.getElementById('borrow-return-date').value;
+      const purpose = document.getElementById('borrow-purpose').value.trim();
+
+      const item = inventory.find(i => i.id === itemId);
+      if (!item) return;
+
+      if (qty > item.available) {
+        showDialog({
+          title: 'Stok Tidak Mencukupi',
+          message: `Jumlah diminta (${qty}) melebihi unit tersedia (${item.available}) untuk ${item.name}.`,
+          type: 'warning'
+        });
+        return;
+      }
+
+      const isAutoApprove = currentUser.role === 'Laboran' || currentUser.role === 'Dosen';
+      if (isAutoApprove) {
+        item.available -= qty;
+      }
+
+      const newLoan = {
+        id: 'PJM-' + Date.now().toString().slice(-5),
+        date: new Date().toISOString().split('T')[0],
+        returnDate,
+        borrowerName: currentUser.fullName,
+        borrowerUsername: currentUser.username,
+        itemId: item.id,
+        itemCode: item.code,
+        itemName: item.name,
+        qty,
+        purpose,
+        status: isAutoApprove ? 'Dipinjam' : 'Menunggu Persetujuan'
+      };
+
+      loans.unshift(newLoan);
+      saveAllStorage();
+      logAudit('Sirkulasi Peminjaman', `Pengajuan peminjaman ${qty}x ${item.code} (${item.name}) oleh ${currentUser.fullName} — Status: ${newLoan.status}.`);
+      refreshAllViews();
+      e.target.reset();
+      showToast('Pengajuan peminjaman berhasil dicatat!', 'success');
+    }
+
+    function renderLoansTable() {
+      const tbody = document.getElementById('loans-tbody');
+      const isStaff = currentUser && (currentUser.role === 'Laboran' || currentUser.role === 'Dosen');
+
+      if (loans.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400">Belum ada riwayat transaksi peminjaman.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = loans.map(loan => {
+        let statusBadge = 'bg-amber-100 text-amber-800';
+        if (loan.status === 'Dipinjam') statusBadge = 'bg-blue-100 text-blue-800';
+        else if (loan.status === 'Dikembalikan') statusBadge = 'bg-emerald-100 text-emerald-800';
+        else if (loan.status === 'Ditolak') statusBadge = 'bg-rose-100 text-rose-800';
+
+        let actionsHtml = `<span class="text-[11px] text-slate-400">Selesai</span>`;
+        if (isStaff) {
+          if (loan.status === 'Menunggu Persetujuan') {
+            actionsHtml = `
+              <button onclick="approveLoan('${loan.id}')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold mr-1">Setujui</button>
+              <button onclick="rejectLoan('${loan.id}')" class="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold">Tolak</button>
+            `;
+          } else if (loan.status === 'Dipinjam') {
+            actionsHtml = `
+              <button onclick="returnLoan('${loan.id}')" class="px-2.5 py-1 rounded-lg bg-blue-700 hover:bg-blue-800 text-white text-[11px] font-bold">Verifikasi Kembali</button>
+            `;
+          }
+        } else {
+          actionsHtml = `<span class="text-[11px] text-slate-500">${loan.status}</span>`;
+        }
+
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-3 px-3.5">
+              <div class="font-mono font-bold text-slate-900">${loan.id}</div>
+              <div class="text-[11px] text-slate-500">Kembali: ${loan.returnDate}</div>
+            </td>
+            <td class="py-3 px-3.5">
+              <div class="font-semibold text-slate-800">${loan.borrowerName}</div>
+              <div class="text-[11px] text-slate-500 truncate max-w-[160px]">${loan.purpose}</div>
+            </td>
+            <td class="py-3 px-3.5">
+              <div class="font-bold text-blue-900">${loan.itemCode}</div>
+              <div class="text-[11px] text-slate-600">${loan.itemName}</div>
+            </td>
+            <td class="py-3 px-3.5 text-center font-bold">${loan.qty}</td>
+            <td class="py-3 px-3.5">
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${statusBadge}">${loan.status}</span>
+            </td>
+            <td class="py-3 px-3.5 text-right whitespace-nowrap">${actionsHtml}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function approveLoan(loanId) {
+      const loan = loans.find(l => l.id === loanId);
+      if (!loan) return;
+      const item = inventory.find(i => i.id === loan.itemId);
+      if (item && item.available >= loan.qty) {
+        item.available -= loan.qty;
+        loan.status = 'Dipinjam';
+        saveAllStorage();
+        logAudit('Sirkulasi Peminjaman', `Menyetujui peminjaman ${loan.id} (${loan.qty}x ${loan.itemCode}) untuk ${loan.borrowerName}.`);
+        refreshAllViews();
+        showToast('Peminjaman disetujui & stok otomatis diperbarui.', 'success');
+      } else {
+        showToast('Stok unit tidak mencukupi untuk menyetujui peminjaman ini.', 'error');
+      }
+    }
+
+    function rejectLoan(loanId) {
+      const loan = loans.find(l => l.id === loanId);
+      if (!loan) return;
+      loan.status = 'Ditolak';
+      saveAllStorage();
+      logAudit('Sirkulasi Peminjaman', `Menolak pengajuan peminjaman ${loan.id} (${loan.itemCode}).`);
+      refreshAllViews();
+      showToast('Pengajuan peminjaman ditolak.', 'info');
+    }
+
+    function returnLoan(loanId) {
+      const loan = loans.find(l => l.id === loanId);
+      if (!loan) return;
+      const item = inventory.find(i => i.id === loan.itemId);
+      if (item) {
+        item.available = Math.min(item.total, item.available + loan.qty);
+      }
+      loan.status = 'Dikembalikan';
+      saveAllStorage();
+      logAudit('Sirkulasi Peminjaman', `Verifikasi pengembalian alat untuk transaksi ${loan.id} (${loan.qty}x ${loan.itemCode}).`);
+      refreshAllViews();
+      showToast('Pengembalian alat telah diverifikasi.', 'success');
+    }
+
+    // ==================== MAINTENANCE & CALIBRATION ====================
+    function handleMaintenanceSubmit(e) {
+      e.preventDefault();
+      const itemId = document.getElementById('maint-item-select').value;
+      const type = document.getElementById('maint-type').value;
+      const resultCond = document.getElementById('maint-result-cond').value;
+      const notes = document.getElementById('maint-notes').value.trim();
+
+      const item = inventory.find(i => i.id === itemId);
+      if (!item) return;
+
+      item.condition = resultCond;
+
+      const newLog = {
+        id: 'MNT-' + Date.now().toString().slice(-4),
+        date: new Date().toISOString().split('T')[0],
+        itemCode: item.code,
+        itemName: item.name,
+        type,
+        notes,
+        actor: currentUser.fullName
+      };
+
+      maintenanceLogs.unshift(newLog);
+      saveAllStorage();
+      logAudit('Pemeliharaan & Kalibrasi', `Mencatat ${type} pada ${item.code} (${item.name}) -> Status baru: ${resultCond}.`);
+      refreshAllViews();
+      e.target.reset();
+      showToast('Log pemeliharaan/kalibrasi berhasil disimpan.', 'success');
+    }
+
+    function renderMaintenanceTable() {
+      const tbody = document.getElementById('maintenance-tbody');
+      tbody.innerHTML = maintenanceLogs.map(m => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-3 px-4 whitespace-nowrap text-slate-600">${m.date}</td>
+          <td class="py-3 px-4">
+            <div class="font-bold text-blue-900">${m.itemCode}</div>
+            <div class="text-[11px] text-slate-700">${m.itemName}</div>
+          </td>
+          <td class="py-3 px-4 whitespace-nowrap">
+            <span class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 font-semibold text-[11px]">${m.type}</span>
+          </td>
+          <td class="py-3 px-4 text-slate-600">${m.notes}</td>
+          <td class="py-3 px-4 text-slate-700 font-medium whitespace-nowrap">${m.actor}</td>
+        </tr>
+      `).join('');
+    }
+
+    // ==================== QR CODE LABEL GENERATOR ====================
+    function renderQRGrid() {
+      const grid = document.getElementById('print-qr-area');
+      const cat = document.getElementById('qr-category-select').value;
+      const items = cat === 'ALL'
+        ? inventory.slice(0, 16)
+        : inventory.filter(i => i.category === cat);
+
+      grid.innerHTML = items.map(item => `
+        <div class="p-4 rounded-2xl border-2 border-slate-300 bg-white flex flex-col items-center text-center shadow-sm">
+          <div class="text-[10px] font-extrabold uppercase tracking-wider text-blue-900 mb-1">LAB FISIKA UNSIL</div>
+          <div id="qr-box-${item.id}" class="my-2 p-1.5 bg-white border border-slate-200 rounded-xl"></div>
+          <div class="font-mono font-extrabold text-xs text-slate-900 mt-1">${item.code}</div>
+          <div class="text-[11px] font-semibold text-slate-700 line-clamp-1 mt-0.5">${item.name}</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">${item.location}</div>
+        </div>
+      `).join('');
+
+      items.forEach(item => {
+        const el = document.getElementById(`qr-box-${item.id}`);
+        if (el) {
+          el.innerHTML = '';
+          new QRCode(el, {
+            text: `SILABFIS-UNSIL|${item.code}|${item.name}|${item.location}`,
+            width: 88,
+            height: 88,
+            colorDark: '#0f172a',
+            colorLight: '#ffffff'
+          });
+        }
+      });
+    }
+
+    // ==================== AUDIT TRAIL & EXPORT ====================
+    function renderAuditTable() {
+      const tbody = document.getElementById('audit-tbody');
+      tbody.innerHTML = auditLogs.map(log => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-3 px-4 font-mono text-[11px] text-slate-500 whitespace-nowrap">${log.timestamp}</td>
+          <td class="py-3 px-4 font-semibold text-slate-800 whitespace-nowrap">${log.actor}</td>
+          <td class="py-3 px-4 whitespace-nowrap">
+            <span class="px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold text-[11px]">${log.module}</span>
+          </td>
+          <td class="py-3 px-4 text-slate-700">${log.detail}</td>
+        </tr>
+      `).join('');
+    }
+
+    function exportAuditCSV() {
+      const headers = ['Waktu', 'Aktor', 'Modul', 'Aktivitas'];
+      const rows = auditLogs.map(a => [a.timestamp, a.actor, a.module, a.detail]);
+      downloadCSVFile('SILABFIS_Audit_Trail_ISO15489.csv', headers, rows);
+      showToast('File CSV Audit Trail berhasil diunduh.', 'success');
+    }
+
+    function exportInventoryCSV() {
+      const headers = ['Kode Alat', 'Nama Instrumen', 'Kategori', 'Spesifikasi', 'Total', 'Tersedia', 'Lokasi', 'Kondisi'];
+      const rows = inventory.map(i => [i.code, i.name, i.category, i.spec, i.total, i.available, i.location, i.condition]);
+      downloadCSVFile('SILABFIS_Inventaris_UNSIL.csv', headers, rows);
+      logAudit('Backup Data', 'Mengekspor katalog inventaris laboratorium ke format CSV.');
+      showToast('File CSV Inventaris berhasil diunduh.', 'success');
+    }
+
+    function downloadCSVFile(filename, headers, rows) {
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+    }
+
+    function exportFullBackupJSON() {
+      const backupPayload = {
+        app: 'SILABFIS UNSIL',
+        exportedAt: new Date().toISOString(),
+        authCode: getActiveAuthCode(),
+        publicRegOpen: isPublicRegistrationOpen(),
+        users,
+        inventory,
+        loans,
+        maintenanceLogs,
+        auditLogs
+      };
+      const blob = new Blob([JSON.stringify(backupPayload, null, 2)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `SILABFIS_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+
+      logAudit('Backup Data', 'Mengunduh cadangan penuh database sistem (.JSON).');
+      showToast('Backup JSON lengkap berhasil diunduh.', 'success');
+    }
+
+    function importBackupJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (!data.inventory || !Array.isArray(data.inventory)) {
+            throw new Error('Format file backup SILABFIS tidak valid.');
+          }
+          if (data.users) users = data.users;
+          if (data.inventory) inventory = data.inventory;
+          if (data.loans) loans = data.loans;
+          if (data.maintenanceLogs) maintenanceLogs = data.maintenanceLogs;
+          if (data.auditLogs) auditLogs = data.auditLogs;
+          if (data.authCode && currentUser.role === 'Laboran') {
+            localStorage.setItem(STORAGE_KEYS.AUTH_CODE, data.authCode);
+          }
+
+          saveAllStorage();
+          logAudit('Restore Data', `Memulihkan database dari file cadangan: ${file.name}.`);
+          refreshAllViews();
+          showToast('Database berhasil dipulihkan dari file JSON!', 'success');
+        } catch (err) {
+          showDialog({
+            title: 'Gagal Memulihkan Backup',
+            message: 'File JSON tidak valid atau rusak: ' + err.message,
+            type: 'danger'
+          });
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    // ==================== USER SETTINGS (ALL ROLES) ====================
+    function populateSettingsView() {
+      if (!currentUser) return;
+      document.getElementById('set-fullname').value = currentUser.fullName;
+      document.getElementById('set-username').value = currentUser.username;
+      document.getElementById('set-idnumber').value = currentUser.idNumber;
+      document.getElementById('set-role-display').value = `${currentUser.role} — Pendidikan Fisika UNSIL`;
+
+      if (currentUser.role === 'Laboran') {
+        updateAdminAuthCodeDisplay();
+        updateAdminPolicyUI();
+        renderAdminUsersTable();
+      }
+    }
+
+    function handleUpdateProfile(e) {
+      e.preventDefault();
+      const newName = document.getElementById('set-fullname').value.trim();
+      const newIdNum = document.getElementById('set-idnumber').value.trim();
+
+      currentUser.fullName = newName;
+      currentUser.idNumber = newIdNum;
+
+      const idx = users.findIndex(u => u.id === currentUser.id);
+      if (idx !== -1) users[idx] = currentUser;
+
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+      saveAllStorage();
+
+      document.getElementById('nav-user-name').textContent = currentUser.fullName;
+      document.getElementById('hero-user-name').textContent = currentUser.fullName;
+
+      logAudit('Pengaturan Akun', `Memperbarui informasi profil pribadi (${newName}).`);
+      showToast('Profil Anda berhasil diperbarui.', 'success');
+    }
+
+    function handleChangePassword(e) {
+      e.preventDefault();
+      const oldPass = document.getElementById('set-old-pass').value;
+      const newPass = document.getElementById('set-new-pass').value;
+
+      if (oldPass !== currentUser.password) {
+        showDialog({
+          title: 'Kata Sandi Lama Salah',
+          message: 'Kata sandi lama yang Anda masukkan tidak sesuai.',
+          type: 'danger'
+        });
+        return;
+      }
+
+      currentUser.password = newPass;
+      const idx = users.findIndex(u => u.id === currentUser.id);
+      if (idx !== -1) users[idx].password = newPass;
+
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+      saveAllStorage();
+
+      e.target.reset();
+      logAudit('Keamanan Akun', `Pengguna ${currentUser.username} mengubah kata sandi akunnya.`);
+      showToast('Kata sandi Anda berhasil diubah.', 'success');
+    }
+
+    function handleSelfUpgradeRole(e) {
+      e.preventDefault();
+      const targetRole = document.getElementById('upgrade-target-role').value;
+      const codeInput = document.getElementById('upgrade-auth-code').value.trim();
+
+      if (codeInput !== getActiveAuthCode()) {
+        showDialog({
+          title: 'Kode Otorisasi Ditolak',
+          message: 'Kode otorisasi salah. Minta kode aktif terbaru kepada Kepala Lab / Laboran.',
+          type: 'danger'
+        });
+        return;
+      }
+
+      const oldRole = currentUser.role;
+      currentUser.role = targetRole;
+      const idx = users.findIndex(u => u.id === currentUser.id);
+      if (idx !== -1) users[idx].role = targetRole;
+
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+      saveAllStorage();
+
+      logAudit('Peningkatan Peran', `Akun ${currentUser.fullName} (${currentUser.username}) naik peran dari ${oldRole} menjadi ${targetRole}.`);
+      showToast(`Selamat! Hak akses Anda kini menjadi ${targetRole}.`, 'success');
+      enterApplication();
+      switchModuleTab('pengaturan');
+    }
+
+    // ==================== LABORAN / KEPALA LAB EXCLUSIVE CONTROLS ====================
+    function assertLaboranPrivilege() {
+      if (!currentUser || currentUser.role !== 'Laboran') {
+        showDialog({
+          title: 'Akses Ditolak (RBAC)',
+          message: 'Tindakan ini hanya diizinkan untuk Kepala Lab / Laboran.',
+          type: 'danger'
+        });
+        return false;
+      }
+      return true;
+    }
+
+    function updateAdminAuthCodeDisplay() {
+      const codeEl = document.getElementById('admin-current-authcode');
+      const iconEl = document.getElementById('admin-reveal-icon');
+      const code = getActiveAuthCode();
+
+      if (isAdminAuthCodeVisible) {
+        codeEl.textContent = code;
+        iconEl.className = 'fa-solid fa-eye-slash';
+      } else {
+        codeEl.textContent = '•'.repeat(Math.max(8, code.length));
+        iconEl.className = 'fa-solid fa-eye';
+      }
+    }
+
+    function toggleAdminAuthCodeReveal() {
+      if (!assertLaboranPrivilege()) return;
+      isAdminAuthCodeVisible = !isAdminAuthCodeVisible;
+      updateAdminAuthCodeDisplay();
+    }
+
+    function copyCurrentAuthCode() {
+      if (!assertLaboranPrivilege()) return;
+      const code = getActiveAuthCode();
+      const tempInput = document.createElement('input');
+      tempInput.value = code;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      showToast('Kode otorisasi berhasil disalin ke clipboard.', 'success');
+    }
+
+    function generateRandomAuthCode() {
+      if (!assertLaboranPrivilege()) return;
+      const prefixes = ['FISUNSIL', 'LABFIS', 'QUANTUM', 'OPTIKA', 'MEKANIKA'];
+      const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+      const randNum = Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('admin-new-authcode-input').value = `${prefix}${randNum}`;
+    }
+
+    function handleUpdateAuthCode(e) {
+      e.preventDefault();
+      if (!assertLaboranPrivilege()) return;
+
+      const newCode = document.getElementById('admin-new-authcode-input').value.trim().toUpperCase();
+      if (newCode.length < 4) {
+        showToast('Kode otorisasi minimal 4 karakter.', 'error');
+        return;
+      }
+
+      localStorage.setItem(STORAGE_KEYS.AUTH_CODE, newCode);
+      isAdminAuthCodeVisible = true;
+      updateAdminAuthCodeDisplay();
+      document.getElementById('admin-new-authcode-input').value = '';
+
+      logAudit('Keamanan Administrator', `Kepala Lab/Laboran mengubah Kode Otorisasi Pendaftaran Staf menjadi kode baru.`);
+      showToast(`Kode otorisasi berhasil diperbarui menjadi "${newCode}".`, 'success');
+    }
+
+    function updateAdminPolicyUI() {
+      const isOpen = isPublicRegistrationOpen();
+      const desc = document.getElementById('admin-reg-policy-desc');
+      const btn = document.getElementById('admin-toggle-reg-btn');
+
+      if (isOpen) {
+        desc.textContent = 'Saat ini: Terbuka untuk mahasiswa & staf berkode.';
+        btn.className = 'px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition shrink-0';
+        btn.innerHTML = '<i class="fa-solid fa-lock-open mr-1"></i> Terbuka';
+      } else {
+        desc.textContent = 'Saat ini: Dikunci (pendaftaran baru dinonaktifkan).';
+        btn.className = 'px-3.5 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-sm transition shrink-0';
+        btn.innerHTML = '<i class="fa-solid fa-lock mr-1"></i> Dikunci';
+      }
+    }
+
+    function togglePublicRegistrationPolicy() {
+      if (!assertLaboranPrivilege()) return;
+      const nextState = !isPublicRegistrationOpen();
+      localStorage.setItem(STORAGE_KEYS.REG_OPEN, String(nextState));
+      updateAdminPolicyUI();
+      updateAuthRegPolicyUI();
+
+      logAudit('Kebijakan Sistem', `Status pendaftaran akun mandiri diubah menjadi: ${nextState ? 'TERBUKA' : 'DIKUNCI'}.`);
+      showToast(`Pendaftaran publik kini ${nextState ? 'DIBUKA' : 'DIKUNCI'}.`, 'info');
+    }
+
+    function toggleAdminAddUserForm() {
+      if (!assertLaboranPrivilege()) return;
+      const form = document.getElementById('admin-add-user-form');
+      form.classList.toggle('hidden');
+    }
+
+    function handleAdminCreateUser(e) {
+      e.preventDefault();
+      if (!assertLaboranPrivilege()) return;
+
+      const fullName = document.getElementById('admin-new-fullname').value.trim();
+      const idNumber = document.getElementById('admin-new-idnum').value.trim();
+      const username = document.getElementById('admin-new-username').value.trim().toLowerCase();
+      const role = document.getElementById('admin-new-role').value;
+      const password = document.getElementById('admin-new-pass').value;
+
+      if (users.some(u => u.username.toLowerCase() === username)) {
+        showDialog({
+          title: 'Username Duplikat',
+          message: `Username <strong>${username}</strong> sudah terdaftar di sistem.`,
+          type: 'warning'
+        });
+        return;
+      }
+
+      const newUser = {
+        id: 'USR-' + Date.now().toString().slice(-5),
+        username,
+        password,
+        fullName,
+        idNumber,
+        role
+      };
+
+      users.push(newUser);
+      saveAllStorage();
+      renderAdminUsersTable();
+      e.target.reset();
+      document.getElementById('admin-new-pass').value = '123';
+      document.getElementById('admin-add-user-form').classList.add('hidden');
+
+      logAudit('Manajemen Akun', `Laboran menambahkan akun baru secara manual: ${fullName} (${username}) sebagai ${role}.`);
+      showToast(`Akun ${fullName} (${role}) berhasil ditambahkan.`, 'success');
+    }
+
+    function renderAdminUsersTable() {
+      if (!currentUser || currentUser.role !== 'Laboran') return;
+      const tbody = document.getElementById('admin-users-tbody');
+
+      tbody.innerHTML = users.map(u => {
+        const isSelf = u.id === currentUser.id;
+        return `
+          <tr class="hover:bg-blue-50/40 transition ${isSelf ? 'bg-amber-50/40' : ''}">
+            <td class="py-3 px-4">
+              <div class="font-bold text-slate-900 flex items-center gap-2">
+                <span>${u.fullName}</span>
+                ${isSelf ? '<span class="px-2 py-0.5 rounded bg-blue-800 text-white text-[10px]">Akun Anda</span>' : ''}
+              </div>
+            </td>
+            <td class="py-3 px-4 font-mono text-slate-700">${u.username}</td>
+            <td class="py-3 px-4 text-slate-600">${u.idNumber}</td>
+            <td class="py-3 px-4">
+              <select onchange="adminChangeUserRole('${u.id}', this.value)" ${isSelf ? 'disabled title="Tidak dapat mengubah peran akun sendiri"' : ''}
+                class="px-2.5 py-1.5 text-xs font-bold rounded-xl border border-slate-300 bg-white outline-none ${isSelf ? 'opacity-60 cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-700'}">
+                <option value="Mahasiswa" ${u.role === 'Mahasiswa' ? 'selected' : ''}>Mahasiswa</option>
+                <option value="Dosen" ${u.role === 'Dosen' ? 'selected' : ''}>Dosen</option>
+                <option value="Laboran" ${u.role === 'Laboran' ? 'selected' : ''}>Laboran</option>
+              </select>
+            </td>
+            <td class="py-3 px-4 text-right whitespace-nowrap">
+              ${isSelf ? `
+                <span class="text-[11px] text-slate-400 italic">Sesi Aktif Dilindungi</span>
+              ` : `
+                <button type="button" onclick="adminResetUserPassword('${u.id}')" title="Reset Password ke 123"
+                  class="px-2.5 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-[11px] mr-1.5 transition">
+                  <i class="fa-solid fa-key mr-1"></i> Reset Sandi (123)
+                </button>
+                <button type="button" onclick="adminDeleteUser('${u.id}')" title="Hapus Akun Pengguna"
+                  class="px-2.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] shadow-sm transition">
+                  <i class="fa-solid fa-user-xmark mr-1"></i> Hapus Akun
+                </button>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function adminChangeUserRole(userId, newRole) {
+      if (!assertLaboranPrivilege()) return;
+      if (userId === currentUser.id) return;
+
+      const target = users.find(u => u.id === userId);
+      if (!target) return;
+
+      const oldRole = target.role;
+      target.role = newRole;
+      saveAllStorage();
+      renderAdminUsersTable();
+
+      logAudit('Manajemen Akun', `Mengubah peran akun ${target.fullName} (${target.username}) dari ${oldRole} menjadi ${newRole}.`);
+      showToast(`Peran ${target.fullName} diubah menjadi ${newRole}.`, 'success');
+    }
+
+    function adminResetUserPassword(userId) {
+      if (!assertLaboranPrivilege()) return;
+      const target = users.find(u => u.id === userId);
+      if (!target) return;
+
+      showDialog({
+        title: 'Reset Kata Sandi Pengguna?',
+        message: `Reset kata sandi untuk akun <strong>${target.fullName}</strong> (<code>${target.username}</code>) menjadi kata sandi default <strong>123</strong>?`,
+        type: 'warning',
+        confirmText: 'Ya, Reset ke 123',
+        cancelText: 'Batal',
+        onConfirm: () => {
+          target.password = '123';
+          saveAllStorage();
+          logAudit('Manajemen Akun', `Mereset kata sandi akun ${target.fullName} (${target.username}) ke default (123).`);
+          showToast(`Kata sandi ${target.username} telah direset ke "123".`, 'success');
+        }
+      });
+    }
+
+    function adminDeleteUser(userId) {
+      if (!assertLaboranPrivilege()) return;
+      if (userId === currentUser.id) {
+        showToast('Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif.', 'error');
+        return;
+      }
+
+      const target = users.find(u => u.id === userId);
+      if (!target) return;
+
+      showDialog({
+        title: 'Hapus Akun Pengguna Permanen?',
+        message: `Anda yakin ingin menghapus akun <strong>${target.fullName}</strong> (Username: <code>${target.username}</code>, Peran: ${target.role}) dari SILABFIS? Tindakan ini tidak dapat dibatalkan.`,
+        type: 'danger',
+        confirmText: 'Ya, Hapus Akun',
+        cancelText: 'Batal',
+        onConfirm: () => {
+          users = users.filter(u => u.id !== userId);
+          saveAllStorage();
+          renderAdminUsersTable();
+          logAudit('Manajemen Akun', `Menghapus akun pengguna: ${target.fullName} (${target.username} - ${target.role}).`);
+          showToast(`Akun ${target.fullName} telah dihapus dari sistem.`, 'info');
+        }
+      });
+    }
+
+    function confirmResetDemoData() {
+      if (!assertLaboranPrivilege()) return;
+
+      showDialog({
+        title: 'Reset Seluruh Database Demo ke Awal?',
+        message: 'Tindakan ini akan mengembalikan 64 instrumen Pendidikan Fisika UNSIL, transaksi peminjaman, log kalibrasi, serta akun demo bawaan ke kondisi awal.',
+        type: 'danger',
+        confirmText: 'Ya, Reset Sekarang',
+        cancelText: 'Batal',
+        onConfirm: () => {
+          inventory = JSON.parse(JSON.stringify(INITIAL_64_INSTRUMENTS));
+          // Keep current active Laboran account intact while restoring default demo accounts
+          const mergedUsers = JSON.parse(JSON.stringify(DEFAULT_USERS));
+          if (!mergedUsers.some(u => u.id === currentUser.id)) {
+            mergedUsers.push(currentUser);
+          }
+          users = mergedUsers;
+          loans = [];
+          maintenanceLogs = [];
+          saveAllStorage();
+
+          logAudit('Reset Sistem', 'Kepala Lab/Laboran melakukan reset database demonstrasi ke kondisi awal.');
+          refreshAllViews();
+          showToast('Database demo SILABFIS telah dikembalikan ke pengaturan awal.', 'success');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
